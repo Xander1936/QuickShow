@@ -5,6 +5,7 @@ import appStore from './appStore.svg'
 import screenImage from './screenImage.svg'
 import profile from './profile.png'
 
+// Centralized asset registry for images and icons reused across the interface.
 export const assets = {
     logo,
     marvelLogo,
@@ -14,6 +15,7 @@ export const assets = {
     profile
 }
 
+// Demo trailers used to populate the UI before real data is connected.
 export const dummyTrailers = [
     {
         image: "https://img.youtube.com/vi/WpW36ldAqnM/maxresdefault.jpg",

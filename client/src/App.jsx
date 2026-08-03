@@ -1,4 +1,3 @@
-import React from 'react'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import { Route, Routes, useLocation } from 'react-router-dom'
@@ -10,10 +9,11 @@ import MyBookings from './pages/MyBookings'
 import Favorite from './pages/Favorite'
 import { Toaster } from 'react-hot-toast'
 
+// Main application shell: renders the shared layout and the active route.
 const App = () => {
-  // Check if the current route is an admin route to determine whether to show the Navbar and Footer.
-  const location = useLocation()
-  const isAdminRoute = location.pathname.startsWith('/admin')
+  // Hide the shared navbar/footer on admin pages if needed.
+  // const location = useLocation()
+  const isAdminRoute = useLocation().pathname.startsWith('/admin')
 
   return (
     <>
