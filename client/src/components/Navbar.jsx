@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { assets } from '../assets/assets'
 import { MenuIcon, SearchIcon, XIcon } from 'lucide-react'
+import { useClerk, UserButton, useUser } from '@clerk/react'
 
 // Shared navigation links used by the top navbar and the mobile menu.
 const navLinks = [
@@ -15,6 +16,8 @@ const navLinks = [
 const Navbar = () => {
   // Controls the mobile menu visibility on small screens.
   const [isOpen, setIsOpen] = useState(false)
+  const {user} = useUser()
+  const {openSignIn} = useClerk()
 
   return (
     <header className='fixed left-0 top-0 z-50 w-full px-4 py-4 md:px-8 lg:px-16'>
@@ -71,9 +74,15 @@ const Navbar = () => {
 
         <div className='flex items-center gap-3 sm:gap-4'>
           <SearchIcon className='hidden h-5 w-5 cursor-pointer md:block' />
-          <button className='cursor-pointer rounded-full bg-primary px-4 py-2 text-sm font-medium transition hover:bg-primary-dull sm:px-6'>
-            Login
-          </button>
+          {
+            !user ? (
+              <button onClick={openSignIn} className='cursor-pointer rounded-full bg-primary px-4 py-2 text-sm font-medium transition hover:bg-primary-dull sm:px-6'>
+                Login
+              </button>
+            ) : (
+              <UserButton />
+            )
+          }
         </div>
 
         <button

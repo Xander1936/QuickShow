@@ -8,6 +8,9 @@ import SeatLayout from './pages/SeatLayout'
 import MyBookings from './pages/MyBookings'
 import Favorite from './pages/Favorite'
 import { Toaster } from 'react-hot-toast'
+// import './App.css'
+import { Show, SignInButton, SignUpButton, UserButton } from '@clerk/react'
+
 
 // Main application shell: renders the shared layout and the active route.
 const App = () => {
