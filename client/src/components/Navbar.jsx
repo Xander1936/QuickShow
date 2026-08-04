@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { assets } from '../assets/assets'
-import { MenuIcon, SearchIcon, XIcon } from 'lucide-react'
+import { MenuIcon, SearchIcon, TicketPlus, XIcon } from 'lucide-react'
 import { useClerk, UserButton, useUser } from '@clerk/react'
 
 // Shared navigation links used by the top navbar and the mobile menu.
@@ -18,6 +18,8 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false)
   const {user} = useUser()
   const {openSignIn} = useClerk()
+
+  const navigate = useNavigate()
 
   return (
     <header className='fixed left-0 top-0 z-50 w-full px-4 py-4 md:px-8 lg:px-16'>
@@ -76,11 +78,22 @@ const Navbar = () => {
           <SearchIcon className='hidden h-5 w-5 cursor-pointer md:block' />
           {
             !user ? (
-              <button onClick={openSignIn} className='cursor-pointer rounded-full bg-primary px-4 py-2 text-sm font-medium transition hover:bg-primary-dull sm:px-6'>
+              <button 
+                onClick={openSignIn} 
+                className='cursor-pointer rounded-full bg-primary px-4 py-2 text-sm font-medium transition hover:bg-primary-dull sm:px-6'
+              >
                 Login
               </button>
             ) : (
-              <UserButton />
+              <UserButton>
+                <UserButton.MenuItems>
+                  <UserButton.Action 
+                    label="My Bookings" 
+                    labelIcon={<TicketPlus width={15}/>} 
+                    onClick={()=>navigate('/my-bookings')} 
+                  />
+                </UserButton.MenuItems>
+              </UserButton>
             )
           }
         </div>
