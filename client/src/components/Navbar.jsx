@@ -53,7 +53,10 @@ const Navbar = () => {
                     aria-label='Close menu'
                     className='inline-flex h-10 w-10 items-center justify-center rounded-full transition hover:bg-white/10'
                   >
-                    <XIcon className='h-5 w-5' />
+                    <XIcon 
+                      className='md:hidden absolute top-6 h-5 w-5 cursor-pointer'
+                      onClick={() => setIsOpen(!isOpen)} 
+                    />
                   </button>
                 </div>
 
@@ -62,7 +65,7 @@ const Navbar = () => {
                     <Link
                       key={link.label}
                       to={link.to}
-                      onClick={() => setIsOpen(false)}
+                      onClick={() => {scrollTo(0,0); setIsOpen(false)}}
                       className='whitespace-nowrap transition hover:text-white/80'
                     >
                       {link.label}
