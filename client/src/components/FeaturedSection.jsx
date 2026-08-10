@@ -26,11 +26,11 @@ const FeaturedSection = () => {
       <div className='flex flex-wrap max-sm:justify-center gap-8 mt-8'>
         {/* Render the first 6 shows from the dummy data as MovieCard components */}
         {dummyShowsData.slice(0, 6).map((show)=>(
-            <MovieCard key={show.id} movie={show}/>
+            <MovieCard key={show._id} movie={show}/>
         ))}
       </div> 
       
-      <div className='flex justify-center mt-20' >
+      <div className='flex justify-center mt-20'>
         <button
             onClick={()=> {navigate('/movies'); scrollTo(0,0)}}
             className='px-10 py-3 text-sm  bg-primary hover:bg-primary-dull 
