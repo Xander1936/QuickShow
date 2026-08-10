@@ -3,7 +3,7 @@ import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import timeFormat from '../lib/timeFormat'
 
-const MovieCard = ({movie}) => {
+const MoviesCard = ({movie}) => {
 
     const navigate = useNavigate()
 
@@ -34,4 +34,4 @@ const MovieCard = ({movie}) => {
   )
 }
 
-export default MovieCard
+export default MoviesCard
