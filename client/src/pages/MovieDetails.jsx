@@ -14,6 +14,7 @@ const MovieDetails = () => {
   const navigate = useNavigate()
   const { id } = useParams()
   const [show, setShow] = React.useState(null)
+  const [isFavorite, setIsFavorite] = React.useState(false)
 
   const getShow = async () => {
     const selectedShow = dummyShowsData.find((show) => show._id === id)
@@ -74,9 +75,12 @@ const MovieDetails = () => {
             >
               Buy Tickets
             </a>
-            <button className='bg-gray-700 p-2.5 rounded-full transition 
+            <button
+              onClick={() => setIsFavorite((favorite) => !favorite)}
+              aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+              className='bg-gray-700 p-2.5 rounded-full transition 
             cursor-pointer active:scale-95'>
-              <Heart className={`w-5 h-5`}/>
+              <Heart className={`w-5 h-5 ${isFavorite ? 'fill-primary text-primary' : ''}`}/>
             </button>
           </div>
         </div>   
@@ -100,8 +104,8 @@ const MovieDetails = () => {
       <DateSelect dateTime={show.dateTime} id={id} />
 
       <p className='text-lg font-medium mt-20 mb-8' >You May Also Like</p>
-      <div className='flex flex-wrap max-sm:justify-center gap-8' >
-        {dummyShowsData.slice(0,6).map((movie, index)=> (
+      <div className='flex flex-wrap max-md:flex-col max-md:items-center md:justify-center gap-8' >
+        {dummyShowsData.slice(0,8).map((movie, index)=> (
           <MovieCard key={index} movie={movie} />
         ))}
       </div>
