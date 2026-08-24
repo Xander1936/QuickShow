@@ -3,6 +3,7 @@ import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import timeFormat from '../lib/timeFormat'
 
+// Reusable movie preview card with navigation to the movie details page.
 const MoviesCard = ({movie}) => {
 
     const navigate = useNavigate()

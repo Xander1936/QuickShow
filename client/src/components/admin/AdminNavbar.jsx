@@ -2,6 +2,7 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import { assets } from '../../assets/assets'
 
+// Top navigation bar shared by the admin pages.
 const AdminNavbar = () => {
   return (
     <div className='flex items-center justify-between px-6 

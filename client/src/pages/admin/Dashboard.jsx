@@ -7,6 +7,7 @@ import BlurCircle from '../../components/BlurCircle';
 import { dateFormat } from '../../lib/dateFormat';
 // import dateFormat from '../../lib/dateFormat'
 
+// Admin overview with summary metrics and active shows.
 const Dashboard = () => {
 
   const currency = import.meta.env.VITE_CURRENCY

@@ -3,6 +3,7 @@ import { assets } from '../assets/assets'
 import { ArrowRight, CalendarIcon, ClockIcon } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
+// Landing hero that introduces the featured movie and links to the catalog.
 const HeroSection = () => {
 
     const navigate = useNavigate()

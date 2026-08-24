@@ -1,5 +1,6 @@
 import React from 'react'
 
+// Reusable two-part heading for admin page sections.
 const Title = ({ text1, text2 }) => {
   return (
     <h1 className="font-medium text-2xl">

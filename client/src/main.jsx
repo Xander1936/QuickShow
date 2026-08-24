@@ -1,6 +1,6 @@
-// Entrée principale du client React (Vite)
-// - Monte l'application React dans l'élément `#root`
-// - Enveloppe `App` avec `BrowserRouter` pour activer le routage côté client
+// Entry point for the Vite React client.
+// - Mounts the application into the `#root` element.
+// - Wraps the app with `BrowserRouter` for client-side routing.
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'

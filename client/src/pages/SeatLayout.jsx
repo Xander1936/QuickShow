@@ -7,6 +7,7 @@ import isoTimeFormat from '../lib/isoTimeFormat'
 import BlurCircle from '../components/BlurCircle'
 import toast from 'react-hot-toast'
 
+// Seat selection page for a chosen movie date and showtime.
 const SeatLayout = () => {
   const groupRows = [["A", "B"], ["C", "D"], ["E", "F"], ["G", "H"], ["I", "J"]]
 

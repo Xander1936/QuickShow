@@ -4,6 +4,7 @@ import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useNavigate } from 'react-router-dom'
 
+// Date picker used to choose a show date before booking seats.
 const DateSelect = ( {dateTime, id} ) => {
 
   const navigate = useNavigate()

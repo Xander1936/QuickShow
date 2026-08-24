@@ -3,6 +3,7 @@ import React from 'react'
 import { NavLink } from 'react-router-dom'
 import { assets } from '../../assets/assets'
 
+// Admin navigation links and the current administrator profile.
 const AdminSidebar = () => {
 
   const user = {

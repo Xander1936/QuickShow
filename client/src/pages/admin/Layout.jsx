@@ -3,6 +3,7 @@ import AdminNavbar from '../../components/admin/AdminNavbar'
 import AdminSidebar from '../../components/admin/AdminSidebar'
 import { Outlet } from 'react-router-dom'
 
+// Admin shell that combines the header, sidebar, and nested page content.
 const Layout = () => {
   return (
     <>

@@ -5,6 +5,7 @@ import Loading from '../components/Loading'
 import timeFormat from '../lib/timeFormat'
 import { dateFormat } from '../lib/dateFormat'
 
+// Displays the current user's booked movies and ticket information.
 const MyBookings = () => {
   const currency = import.meta.env.VITE_CURRENCY
 

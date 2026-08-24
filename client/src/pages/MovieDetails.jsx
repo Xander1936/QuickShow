@@ -9,6 +9,7 @@ import MovieCard from '../components/MoviesCard'
 import Loading from '../components/Loading'
 
 
+// Details view for a movie, including cast, showtimes, and related titles.
 const MovieDetails = () => {
 
   const navigate = useNavigate()

@@ -1,3 +1,4 @@
+// Convert a date-time value into a localized time string.
 const isoTimeFormat = (dateTime) => {
     const date = new Date(dateTime);
     const localTime = date.toLocaleTimeString('en-US', {

@@ -4,6 +4,7 @@ import Loading from '../../components/Loading';
 import Title from '../../components/admin/Title';
 import { dateFormat } from '../../lib/dateFormat';
 
+// Admin table listing all customer bookings.
 const ListBookings = () => {
   const currency = import.meta.env.VITE_CURRENCY
 

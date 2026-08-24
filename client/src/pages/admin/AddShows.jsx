@@ -5,6 +5,7 @@ import Title from '../../components/admin/Title';
 import { CheckIcon, DeleteIcon, StarIcon } from 'lucide-react'
 import { kConverter } from '../../lib/kConverter';
 
+// Admin form for selecting a movie, price, and showtimes.
 const AddShows = () => {
   const currency = import.meta.env.VITE_CURRENCY
 

@@ -1,5 +1,6 @@
 import React from 'react'
 
+// Shared loading indicator displayed while page data is being prepared.
 const Loading = () => {
   return (
     <div className='flex justify-center items-center h-[80vh]'>
