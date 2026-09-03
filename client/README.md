@@ -1,16 +1,67 @@
-# React + Vite
+# QuickShow Client
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This directory contains the React frontend for QuickShow, built with Vite. It provides movie discovery, movie details, showtime and seat selection, favorites, bookings, and the admin interface.
 
-Currently, two official plugins are available:
+## Requirements
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Node.js and npm.
+- A Clerk publishable key.
+- The QuickShow server running when live API features are used.
 
-## React Compiler
+## Setup
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+From this directory, install dependencies:
 
-## Expanding the ESLint configuration
+```bash
+npm install
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Create `.env` in `client/`:
+
+```env
+VITE_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
+VITE_CURRENCY=$
+```
+
+The Clerk key is required by the authentication provider. `VITE_CURRENCY` controls the currency symbol shown for prices.
+
+## Scripts
+
+```bash
+npm run dev       # Start the development server with HMR
+npm run build     # Build the application for production
+npm run preview   # Preview the production build
+npm run lint      # Run ESLint
+```
+
+## Application Routes
+
+| Route | Description |
+| --- | --- |
+| `/` | Home page |
+| `/movies` | Movie catalog |
+| `/movies/:id` | Movie details and date selection |
+| `/movies/:id/:date` | Showtime and seat selection |
+| `/my-bookings` | User booking history |
+| `/favorite` | Favorite movies |
+| `/admin` | Admin dashboard |
+| `/admin/add-shows` | Add shows |
+| `/admin/list-shows` | List shows |
+| `/admin/list-bookings` | List bookings |
+
+## Source Layout
+
+```text
+src/
+├── assets/       # Images, videos and local demonstration data
+├── components/   # Shared and admin UI components
+├── lib/          # Date, time and number formatting helpers
+├── pages/        # Public, booking and admin pages
+├── App.jsx       # Application routes and shared shell
+├── index.css     # Global styles and Tailwind theme
+└── main.jsx      # React entry point
+```
+
+## Notes
+
+Several screens currently use the local data in `src/assets/assets.js`. API integration and persistence depend on the server configuration described in the repository root README.

@@ -1,195 +1,157 @@
-<<<<<<< HEAD
 # QuickShow
 
-QuickShow est une application web de réservation de places de cinéma construite avec React et Vite. Elle permet de découvrir les films à l'affiche, de consulter leurs détails, de choisir une séance et de sélectionner des sièges.
-
-> Le projet est actuellement un prototype frontend. Les films, séances, réservations et statistiques affichés sont des données de démonstration locales; aucun backend ou paiement réel n'est inclus.
-
-## Fonctionnalités
-
-- Page d'accueil avec film mis en avant, films à l'affiche et bandes-annonces YouTube.
-- Catalogue des films avec note, genres, durée et date de sortie.
-- Page de détails avec synopsis, casting, bande-annonce et séances disponibles.
-- Sélection d'une date, d'un horaire et de cinq sièges maximum.
-- Page des réservations de l'utilisateur avec statut de paiement.
-- Page des films favoris basée sur les données de démonstration.
-- Authentification et menu utilisateur via Clerk.
-- Interface responsive avec Tailwind CSS et icônes Lucide.
-
-## Technologies
-
-- React 19
-- Vite
-- React Router
-- Tailwind CSS 4
-- Clerk pour l'authentification
-- React Player pour les bandes-annonces
-- React Hot Toast pour les notifications
-- Lucide React pour les icônes
-
-## Prérequis
-
-- Node.js et npm
-- Une clé publishable Clerk
-
-## Installation
-
-Depuis la racine du dépôt:
-
-```bash
-cd client
-npm install
-```
-
-Créez un fichier `client/.env` avec les variables utilisées par l'application:
-
-```env
-VITE_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
-VITE_CURRENCY=$
-```
-
-La clé Clerk est obligatoire au démarrage de l'application. `VITE_CURRENCY` est utilisée pour afficher les montants des réservations.
-
-## Commandes disponibles
-
-À exécuter dans `client/`:
-
-```bash
-npm run dev       # Démarre le serveur de développement Vite
-npm run build     # Génère la version de production dans dist/
-npm run preview   # Sert la build de production localement
-npm run lint      # Lance ESLint
-```
-
-## Routes principales
-
-| Route | Description |
-| --- | --- |
-| `/` | Accueil, films mis en avant et bandes-annonces |
-| `/movies` | Catalogue des films |
-| `/movies/:id` | Détails d'un film et choix de la date |
-| `/movies/:id/:date` | Choix de l'horaire et des sièges |
-| `/my-bookings` | Réservations de l'utilisateur |
-| `/favorite` | Films favoris |
-| `/admin/*` | Espace d'administration en cours de développement |
-
-## Structure du projet
-
-```text
-client/
-├── public/                  # Images et ressources statiques
-├── src/
-│   ├── assets/               # Images, vidéos et données de démonstration
-│   ├── components/           # Navbar, footer, cartes, sélecteurs et sections
-│   ├── lib/                  # Fonctions de formatage des dates et durées
-│   ├── pages/                # Pages publiques et réservation
-│   │   └── admin/             # Écrans de l'espace administrateur
-│   ├── App.jsx               # Routes et shell de l'application
-│   ├── index.css             # Styles globaux et thème Tailwind
-│   └── main.jsx              # Point d'entrée React
-├── index.html
-├── package.json
-└── vite.config.js
-```
-
-## État du projet
-
-Le frontend utilise encore `src/assets/assets.js` comme source de données. La connexion à une API, la persistance des favoris et des réservations, le paiement et l'espace administrateur complet restent à implémenter.
-=======
-# QuickShow
-
-QuickShow is a movie ticket booking web application built with React and Vite. It allows users to discover currently showing movies, view details, choose showtimes, and select seats.
-
-> The project is currently a frontend prototype. The movies, showtimes, bookings, and analytics displayed are local demonstration data; no real backend or payment systems are integrated.
+QuickShow is a movie discovery and cinema ticket booking application. The repository contains a React/Vite client and an Express/MongoDB server. Users can browse movies, inspect details, choose showtimes and seats, and review their bookings. Administrators can manage shows through the admin area and protected API endpoints.
 
 ## Features
 
-- Homepage with a featured movie, movies in theaters, and YouTube trailers.
-- Movie catalog containing ratings, genres, duration, and release dates.
-- Detailed page with synopsis, cast, trailer, and available showtimes.
-- Date, time, and seat selection (maximum of 5 seats).
-- User bookings page displaying payment status.
-- Favorite movies page based on mock data.
-- User authentication and profile menu via Clerk.
-- Responsive user interface using Tailwind CSS and Lucide icons.
+- Featured movies, movie catalog, details, cast, ratings and trailers.
+- Showtime, date and seat selection with a maximum of five seats.
+- Favorites and user booking views.
+- Clerk authentication and user synchronization through Inngest.
+- Admin pages for adding shows, listing shows and listing bookings.
+- TMDB integration for now-playing movies and movie details.
+- Responsive interface built with Tailwind CSS and Lucide icons.
 
-## Technologies
+## Stack
 
-- React 19
-- Vite
-- React Router
-- Tailwind CSS 4
-- Clerk for authentication
-- React Player for video trailers
-- React Hot Toast for notification banners
-- Lucide React for UI icons
+- Client: React 19, Vite, React Router, Tailwind CSS, Clerk, React Player and React Hot Toast.
+- Server: Node.js, Express, MongoDB with Mongoose, Axios, Clerk Express and Inngest.
+- External services: TMDB for movie data, Clerk for authentication, MongoDB for persistence.
 
-## Prerequisites
+## Requirements
 
-- Node.js and npm installed
-- A Clerk publishable key
-
-## Installation
-
-From the root directory of the repository, run:
-
-```bash
-cd client
-npm install
-```
-
-Create a `client/.env` file with the required environment variables:
-
-```env
-VITE_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
-VITE_CURRENCY=$
-```
-
-The Clerk key is mandatory to launch the application. `VITE_CURRENCY` is used to format ticket and booking pricing.
-
-## Available Scripts
-
-Run these commands inside the `client/` directory:
-
-```bash
-npm run dev       # Starts the Vite development server
-npm run build     # Generates the production build inside dist/
-npm run preview   # Serves the production build locally
-npm run lint      # Runs ESLint checks
-```
-
-## Main Routes
-
-| Route | Description |
-| --- | --- |
-| `/` | Home, featured movies, and trailers |
-| `/movies` | Full movie catalog |
-| `/movies/:id` | Movie details and date selection |
-| `/movies/:id/:date` | Showtime selection and seat booking |
-| `/my-bookings` | User booking history |
-| `/favorite` | Saved favorite movies |
-| `/admin/*` | Administrative dashboard area (work in progress) |
+- Node.js and npm.
+- A MongoDB database.
+- A TMDB API bearer token.
+- A Clerk application and publishable key.
+- An Inngest environment for user synchronization when using those events.
 
 ## Project Structure
 
 ```text
-client/
-├── public/                  # Images and static assets
-├── src/
-│   ├── assets/               # Local mock data, images, and videos
-│   ├── components/           # Navbar, footer, cards, selectors, and sections
-│   ├── lib/                  # Date and duration utility formatting functions
-│   ├── pages/                # Public pages and booking screens
-│   │   └── admin/             # Admin dashboard views
-│   ├── App.jsx               # Main application shell and routing setup
-│   ├── index.css             # Global styles and Tailwind configuration
-│   └── main.jsx              # React application entry point
-├── index.html
-├── package.json
-└── vite.config.js
+QuickShow/
+├── client/                 # React/Vite frontend
+│   ├── public/             # Static assets
+│   └── src/                # Components, pages, assets and utilities
+├── server/                 # Express API
+│   ├── configs/            # Database configuration
+│   ├── controllers/        # API handlers
+│   ├── inngest/            # Clerk user synchronization functions
+│   ├── models/             # Mongoose models
+│   └── routes/             # Express routes
+└── README.md
 ```
 
-## Project Status
+## Configuration
 
-The frontend currently relies on `src/assets/assets.js` as its single source of truth. Connecting a live API backend, persisting database storage for favorites and reservations, setting up active payment processing, and completing the full admin panel functions are yet to be implemented.
->>>>>>> f930d017ca24315016f0a98cd4e220e459504c97
+Create `client/.env`:
+
+```env
+VITE_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
+VITE_CURRENCY=$
+```
+
+Create `server/.env`:
+
+```env
+MONGODB_URI=mongodb_connection_string
+TMDB_API_KEY=tmdb_bearer_token
+```
+
+Do not commit environment files or secret keys.
+
+## Installation
+
+Install dependencies in both applications:
+
+```bash
+cd client
+npm install
+cd ../server
+npm install
+```
+
+Start the API from `server/`:
+
+```bash
+npm run server
+```
+
+The API listens on `http://localhost:3000`.
+
+Start the frontend in a second terminal:
+
+```bash
+cd client
+npm run dev
+```
+
+Vite prints the local frontend URL in the terminal.
+
+## Client Commands
+
+Run inside `client/`:
+
+```bash
+npm run dev       # Start the Vite development server
+npm run build     # Create a production build
+npm run preview   # Preview the production build
+npm run lint      # Run ESLint
+```
+
+## Server Commands
+
+Run inside `server/`:
+
+```bash
+npm run server    # Start with Nodemon
+npm start         # Start with Node.js
+```
+
+## Frontend Routes
+
+| Route | Purpose |
+| --- | --- |
+| `/` | Home page with featured and now-playing content |
+| `/movies` | Movie catalog |
+| `/movies/:id` | Movie details and date selection |
+| `/movies/:id/:date` | Showtime and seat selection |
+| `/my-bookings` | User bookings |
+| `/favorite` | Favorite movies |
+| `/admin` | Admin dashboard |
+| `/admin/add-shows` | Add movie shows |
+| `/admin/list-shows` | List shows |
+| `/admin/list-bookings` | List bookings |
+
+## API Endpoints
+
+Base URL: `http://localhost:3000`
+
+| Method | Endpoint | Purpose | Access |
+| --- | --- | --- | --- |
+| `GET` | `/api/show/now-playing` | Fetch now-playing movies from TMDB | Admin |
+| `POST` | `/api/show/add` | Add a movie and its showtimes | Admin |
+| `GET` | `/api/show/all` | Return upcoming shows grouped by movie | Public |
+| `GET` | `/api/show/:movieId` | Return a movie and its upcoming showtimes | Public |
+| `GET` | `/api/inngest` | Inngest function endpoint | Service |
+
+Example body for `POST /api/show/add`:
+
+```json
+{
+  "movieId": "550",
+  "showPrice": 10,
+  "showsInput": [
+    {
+      "date": "2026-09-10",
+      "times": ["10:00", "14:00"]
+    }
+  ]
+}
+```
+
+The protected admin endpoints require the Clerk authentication context configured by the server.
+
+## Current Status
+
+The client still contains local demonstration data in `client/src/assets/assets.js` for several screens. The server supports movie and show persistence, while booking persistence, payment processing and some admin workflows remain under development.
