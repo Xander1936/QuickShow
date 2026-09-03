@@ -108,15 +108,17 @@ export const addShow = async (req, res) => {
 // API to get all shows from the database
 export const getShows = async (req, res) => {
     try {
-        const shows = (await Show.find({showDateTime: {$gte: new Date()}}).populate('movie')).sort({ showDateTime: 1 });
+        const shows = await Show.find({ showDateTime: { $gte: new Date() } })
+            .populate('movie')
+            .sort({ showDateTime: 1 });
         
         // Filter unique shows
         const uniqueShows = new Set(shows.map(show => show.movie));
 
-        res.json({ success: true, shows: Array.from(uniqueShows)});
+        res.status(200).json({ success: true, shows: Array.from(uniqueShows)});
     } catch (error) {
         console.error(error);
-        res.json({ success: false, message: error.message });
+        res.status(500).json({ success: false, message: error.message });
     }
 }
 
@@ -128,6 +130,11 @@ export const getShow = async (req, res) => {
         const shows = await Show.find({ movie: movieId, showDateTime: {$gte: new Date()}});
 
         const movie = await Movie.findById(movieId);
+
+        if (!movie) {
+            return res.status(404).json({ success: false, message: 'Movie not found' });
+        }
+
         const dateTime = {};
 
         shows.forEach((show) => {
@@ -139,9 +146,9 @@ export const getShow = async (req, res) => {
 
         })
         
-        res.json({ success: true, movie, dateTime });
+        res.status(200).json({ success: true, movie, dateTime });
     } catch (error) {
         console.error(error);
-        res.json({ success: false, message: error.message });
+        res.status(500).json({ success: false, message: error.message });
     }
 }
