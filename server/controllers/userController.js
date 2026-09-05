@@ -10,7 +10,7 @@ export const getUserBookings = async (req, res) => {
         const bookings = await Booking.find({ user }).populate({
             path: 'show',
             populate: {
-                {path: 'movie'}
+                path: 'movie',
             }
         }).sort({ createdAt: -1 });
 
@@ -47,11 +47,11 @@ export const updateFavorite = async (req, res) => {
     }
 }
 
-/ / API Controller Function to Get Favorite Movies from Clerk User Metadata
+// API Controller Function to Get Favorite Movies from Clerk User Metadata
 export const getFavorites = async (req, res) => {
     try {
         const user = await clerkClient.users.getUser(req.auth().userId);
-        const favorites = user.privateMetadata.favorites;
+        const favorites = user.privateMetadata.favorites || [];
         
         // Getting movies from database
         const movies = await Movie.find({ _id: { $in: favorites } });
