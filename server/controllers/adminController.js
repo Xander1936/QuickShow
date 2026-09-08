@@ -1,10 +1,27 @@
 import Booking from '../models/Booking.js';
 import Show from '../models/Show.js';
 import User from '../models/User.js';
+import { clerkClient } from '@clerk/express';
 
 // API to check if user is admin or not
 export const isAdmin = async (req, res) => {
-    res.json({ success: true, isAdmin: true });
+    try {
+        const { userId } = req.auth();
+
+        if (!userId) {
+            return res.json({ success: true, isAdmin: false });
+        }
+
+        const user = await clerkClient.users.getUser(userId);
+
+        res.json({
+            success: true,
+            isAdmin: user.privateMetadata.role === 'admin'
+        });
+    } catch (error) {
+        console.error(error);
+        res.json({ success: false, isAdmin: false });
+    }
 }
 
 // API to get dashboard data for admin
