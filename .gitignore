@@ -1,1 +1,7 @@
 node_modules
+
+# ignore the secrets
+.env
+.env.local
+.env.development
+.env.production

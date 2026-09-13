@@ -2,12 +2,14 @@ import { ArrowRight } from 'lucide-react'
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import BlurCircle from './BlurCircle'
-import { dummyShowsData } from '../assets/assets'
+// import { dummyShowsData } from '../assets/assets'
 import MovieCard from './MoviesCard'
+import { useAppContext } from '../context/AppContext'
 
 const FeaturedSection = () => {
 
     const navigate = useNavigate()
+    const {shows} = useAppContext()
 
   return (
     <div className='px-6 md:px-16 lg:px-24 xl:px-44 overflow-hidden' >
@@ -25,7 +27,7 @@ const FeaturedSection = () => {
       {/* Movie cards grid */}
       <div className='flex flex-wrap max-md:flex-col max-md:items-center md:justify-center gap-8 mt-8'>
         {/* Render the first 6 shows from the dummy data as MovieCard components */}
-        {dummyShowsData.slice(0, 8).map((show)=>(
+        {shows.slice(0, 8).map((show)=>(
             <MovieCard key={show._id} movie={show}/>
         ))}
       </div> 

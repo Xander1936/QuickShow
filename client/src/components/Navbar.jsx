@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { assets, dummyShowsData } from '../assets/assets'
 import { MenuIcon, SearchIcon, TicketPlus, XIcon } from 'lucide-react'
 import { useClerk, UserButton, useUser } from '@clerk/react'
+import { useAppContext } from '../context/AppContext'
 
 // Shared navigation links used by the top navbar and the mobile menu.
 const navLinks = [
@@ -35,6 +36,8 @@ const Navbar = () => {
     navigate(`/movies/${movieId}`)
     closeSearch()
   }
+
+  const { favoriteMovies } = useAppContext()
 
   return (
     <header className='fixed left-0 top-0 z-50 w-full px-4 py-4 md:px-8 lg:px-16'>
