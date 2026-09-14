@@ -1,5 +1,4 @@
 import { LayoutDashboardIcon, ListCollapseIcon, ListIcon, PlusSquareIcon } from 'lucide-react'
-import React from 'react'
 import { NavLink } from 'react-router-dom'
 import { assets } from '../../assets/assets'
 

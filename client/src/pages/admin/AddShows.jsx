@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from 'react'
-import { dummyShowsData } from '../../assets/assets';
+import { useEffect, useState } from 'react'
 import Loading from '../../components/Loading';
 import Title from '../../components/admin/Title';
 import { CheckIcon, DeleteIcon, StarIcon } from 'lucide-react'
@@ -52,7 +51,7 @@ const AddShows = () => {
     setDatetimeSelection((prev) => {
       const filteredTimes = prev[date].filter((t) => t !== time);
       if (filteredTimes.length === 0) {
-        const { [date]: _, ...rest } = prev;
+        const rest = Object.fromEntries(Object.entries(prev).filter(([key]) => key !== date));
         return rest;
       }
       return {
@@ -106,7 +105,7 @@ const AddShows = () => {
     if(user) {
       fetchNowPlayingMovies();
     }
-  }, [user]); // As the user changes; in the dependency array. 
+  }, [user]); // As the user changes; in the dependency array.
 
   return nowPlayingMovies.length > 0 ? (
     <>

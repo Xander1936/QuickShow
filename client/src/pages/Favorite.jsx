@@ -1,13 +1,35 @@
-import React from 'react'
+import { useEffect, useState } from 'react'
 // import  {  dummyShowsData  }  from  '../assets/assets'
 import MoviesCard from '../components/MoviesCard'
 import BlurCircle from '../components/BlurCircle'
 import { useAppContext } from '../context/AppContext'
+import { useUser } from '@clerk/react'
 
 // Movies page component. It renders the listing view for the '/movies' route.
 const Favorite = () => {
 
-  const {favoriteMovies} = useAppContext()
+  const {favoriteMovies, user, fetchFavoriteMovies} = useAppContext()
+  const { isLoaded } = useUser()
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    if (!isLoaded) return
+
+    if (!user) {
+      setIsLoading(false)
+      return
+    }
+
+    fetchFavoriteMovies().finally(() => setIsLoading(false))
+  }, [isLoaded, user])
+
+  if (isLoading) {
+    return (
+      <div className='relative flex flex-col items-center justify-center h-screen'>
+        <BlurCircle top="150px" left="0px" />
+      </div>
+    )
+  }
 
   return favoriteMovies.length > 0 ? (
     <div className='relative my-40 mb-60 px-6 md:px-16 lg:px-40 xl:px-44 
@@ -25,8 +47,8 @@ const Favorite = () => {
       </div>
     </div>
   ) : (
-    <div  className='flex flex-col items-center justify-center h-screen'>
-      <h1 className='text-3xl font-bold text-center'>No movies available</h1>
+    <div  className='relative flex flex-col items-center justify-center h-screen'>
+      <h1 className='text-3xl font-bold text-center'   >No movies available</h1>
     </div>
   )
 }

@@ -38,6 +38,7 @@ const Navbar = () => {
   }
 
   const { favoriteMovies } = useAppContext()
+  const visibleNavLinks = navLinks.filter((link) => link.label !== 'Favorites' || favoriteMovies.length > 0)
 
   return (
     <header className='fixed left-0 top-0 z-50 w-full px-4 py-4 md:px-8 lg:px-16'>
@@ -47,7 +48,7 @@ const Navbar = () => {
         </Link>
 
         <nav className={`hidden flex-1 items-center justify-center gap-3 overflow-x-auto px-2 text-sm sm:gap-4 md:gap-6 md:flex`}>
-          {navLinks.map((link) => (
+          {visibleNavLinks.map((link) => (
             <Link
               key={link.label}
               to={link.to}
@@ -79,7 +80,7 @@ const Navbar = () => {
                 </div>
 
                 <div className='row-start-2 col-start-2 flex flex-col gap-3 text-sm'>
-                  {navLinks.map((link) => (
+                  {visibleNavLinks.map((link) => (
                     <Link
                       key={link.label}
                       to={link.to}

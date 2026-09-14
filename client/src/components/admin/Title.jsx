@@ -1,4 +1,3 @@
-import React from 'react'
 
 // Reusable two-part heading for admin page sections.
 const Title = ({ text1, text2 }) => {

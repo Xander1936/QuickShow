@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { assets, dummyDateTimeData, dummyShowsData } from '../assets/assets'
+import { assets, dummyDateTimeData } from '../assets/assets'
 import Loading from '../components/Loading'
 import { ArrowRight, ClockIcon } from 'lucide-react'
 import isoTimeFormat from '../lib/isoTimeFormat'
 import BlurCircle from '../components/BlurCircle'
 import toast from 'react-hot-toast'
+import { useAppContext } from '../context/AppContext'
 
 // Seat selection page for a chosen movie date and showtime.
 const SeatLayout = () => {
@@ -17,9 +18,10 @@ const SeatLayout = () => {
   const [show, setShow] = useState(null)
 
   const navigate = useNavigate()
+  const { shows } = useAppContext()
 
   const getShow = async () => {
-    const show = dummyShowsData.find(show => show._id === id)
+    const show = shows.find(show => show._id === id)
 
     if (show) {
       setShow({
@@ -69,7 +71,7 @@ const SeatLayout = () => {
 
   useEffect(() => {
     getShow()
-  }, [id])
+  }, [id, shows])
 
   return show ? (
     <div className='flex flex-col md:flex-row px-6 md:px-16 lg:px-40 py-30 md:pt-50'>

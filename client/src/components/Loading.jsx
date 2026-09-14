@@ -1,4 +1,3 @@
-import React from 'react'
 
 // Shared loading indicator displayed while page data is being prepared.
 const Loading = () => {
