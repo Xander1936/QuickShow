@@ -18,7 +18,7 @@ const SeatLayout = () => {
   const [show, setShow] = useState(null)
 
   const navigate = useNavigate()
-  const { shows } = useAppContext()
+  const { shows, axios, getToken, user } = useAppContext()
 
   const getShow = async () => {
     const show = shows.find(show => show._id === id)
@@ -51,7 +51,7 @@ const SeatLayout = () => {
     <div key={row} className='flex gap-2 mt-2'>
       <div className='flex flex-wrap items-center justify-center gap-2'>
         {Array.from({ length: count }, (_, i) => {
-          const seatId = `${row}${i + 1}`
+          const seatId = `${row}${i + 1}`;
 
           return (
             <button
