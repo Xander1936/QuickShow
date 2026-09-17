@@ -1,6 +1,8 @@
+// IMPORTANT: This module is part of the QuickShow application. It contains the core UI or server logic for this feature and should remain behaviorally identical while editing.
+
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { dummyDateTimeData } from '../assets/assets'
+// import { dummyDateTimeData } from '../assets/assets'
 import timeFormat from '../lib/timeFormat'
 import { Heart, PlayCircleIcon, StarIcon } from 'lucide-react'
 import DateSelect from '../components/DateSelect'
@@ -13,8 +15,10 @@ import toast from 'react-hot-toast'
 // Base URL for TMDB profile images (https://www.themoviedb.org/settings/api)
 const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w185'
 const TMDB_API_BASE_URL = 'https://api.themoviedb.org/3'
+const DEFAULT_CAST_NAME = 'Cast member'
+const DEFAULT_CAST_IMAGE = 'https://media.istockphoto.com/id/2151669184/vector/vector-flat-illustration-in-grayscale-avatar-user-profile-person-icon-gender-neutral.jpg?s=612x612&w=0&k=20&c=UEa7oHoOL30ynvmJzSCIPrwwopJdfqzBs0q69ezQoM8='
 
-// Details view for a movie, including cast, showtimes, and related titles.
+// This component displays the selected movie's details, cast members, and related actions.
 const MovieDetails = () => {
 
   const navigate = useNavigate()
@@ -24,14 +28,17 @@ const MovieDetails = () => {
 
   const { shows, axios, getToken, user, fetchFavoriteMovies, favoriteMovies, image_base_url } = useAppContext()
   const isFavorite = favoriteMovies.some((movie) => movie._id === id)
-
+        
+  // Find the selected movie from the shared app data and prepare the detail information.
   const getShow = async () => {
-    const selectedShow = shows.find((show) => show._id === id)
-    if (selectedShow) {
-      setShow({
-        movie: selectedShow,
-        dateTime: dummyDateTimeData
-      })
+    try {
+      const { data } = await axios.get(`/api/show/${id}`)
+
+      if (data.success) {
+        setShow(data)
+      }
+    } catch (error) {
+      console.log(error)
     }
   }
 
@@ -44,16 +51,36 @@ const MovieDetails = () => {
     try {
       const apiKey = import.meta.env.VITE_TMDB_API_KEY
       const tmdbMovieId = show?.movie?.tmdb_id ?? show?.movie?._id
-      if (!apiKey || !tmdbMovieId) return
+      if (!apiKey || !tmdbMovieId) {
+        setCasts([{ name: DEFAULT_CAST_NAME, profileImage: DEFAULT_CAST_IMAGE }])
+        return
+      }
 
       const { data } = await axios.get(
         `${TMDB_API_BASE_URL}/movie/${tmdbMovieId}/credits`,
         { params: { api_key: apiKey, language: 'en-US' } }
       )
 
-      setCasts(data.cast || [])
+      const castList = Array.isArray(data?.cast) && data.cast.length > 0
+        ? data.cast
+        : [null]
+
+      setCasts(castList.map((cast) => {
+        const profilePath = cast?.profile_path
+
+        return {
+          ...cast,
+          name: cast?.name?.trim() || DEFAULT_CAST_NAME,
+          profileImage: profilePath
+            ? profilePath.startsWith('http')
+              ? profilePath
+              : `${TMDB_IMAGE_BASE_URL}${profilePath}`
+            : DEFAULT_CAST_IMAGE,
+        }
+      }))
     } catch (error) {
       console.log(error)
+      setCasts([{ name: DEFAULT_CAST_NAME, profileImage: DEFAULT_CAST_IMAGE }])
     }
   }
 
@@ -82,10 +109,12 @@ const MovieDetails = () => {
     getShow()
   }, [id, shows])
 
+  // Load the cast information whenever the current movie changes.
   useEffect(() => {
     getCasts()
   }, [show])
 
+  // Render the movie detail page once the movie data has been loaded.
   return show ? (
     <div className='px-6 md:px-16 lg:px-40 pt-30 md:pt-50' >
       <div className='flex flex-col md:flex-row gap-8 max-w-6xl mx-auto'>
@@ -142,28 +171,27 @@ const MovieDetails = () => {
         </div>   
       </div>
 
+      {/* Show the most prominent cast members in a horizontal list. */}
       <p className='text-lg font-medium mt-20'>Your Favorite  Cast</p>
       <div className='overflow-x-auto no-scrollbar mt-8 pb-4'>
         <div className='flex items-center gap-4 w-max px-4'>
           {casts.slice(0,12).map((cast, index)=> (
-            <div key={cast.cast_id ?? cast.credit_id ?? `${cast.name}-${index}`} className='flex flex-col items-center text-center'>
+            <div key={cast.id ?? cast.cast_id ?? cast.credit_id ?? `cast-${index}`} className='flex flex-col items-center text-center'>
               <img 
-                src={
-                  cast.profile_path
-                    ? `${TMDB_IMAGE_BASE_URL}${cast.profile_path}`
-                    : '/no-profile.png'
-                }
-                alt={cast.name || 'Cast member'}
+                src={cast.profileImage || DEFAULT_CAST_IMAGE}
+                alt={cast.name || DEFAULT_CAST_NAME}
                 className='rounded-full h-20 md:h-20 aspect-square object-cover'
               />
-              <p className='font-medium text-xs mt-3'>{cast.name}</p>
+              <p className='font-medium text-xs mt-3'>{cast.name || DEFAULT_CAST_NAME}</p>
             </div>
           ))}
         </div>
       </div>
 
+      {/* Date and time selection for the current movie. */}
       <DateSelect dateTime={show.dateTime} id={id} />
 
+      {/* Related titles shown below the selected movie details. */}
       <p className='text-lg font-medium mt-20 mb-8' >You May Also Like</p>
       <div className='flex flex-wrap max-md:flex-col max-md:items-center md:justify-center gap-8' >
         {shows.slice(0,8).map((movie, index)=> (

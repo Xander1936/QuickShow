@@ -1,3 +1,5 @@
+// IMPORTANT: This module is part of the QuickShow application. It contains the core UI or server logic for this feature and should remain behaviorally identical while editing.
+
 import { useEffect, useState } from 'react'
 // import  {  dummyShowsData  }  from  '../assets/assets'
 import MoviesCard from '../components/MoviesCard'

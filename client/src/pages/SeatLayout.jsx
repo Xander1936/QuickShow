@@ -1,6 +1,9 @@
+// IMPORTANT: This module is part of the QuickShow application. It contains the core UI or server logic for this feature and should remain behaviorally identical while editing.
+
 import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { assets, dummyDateTimeData } from '../assets/assets'
+// import { assets, dummyDateTimeData } from '../assets/assets'
+import { assets } from '../assets/assets'
 import Loading from '../components/Loading'
 import { ArrowRight, ClockIcon } from 'lucide-react'
 import isoTimeFormat from '../lib/isoTimeFormat'
@@ -10,24 +13,31 @@ import { useAppContext } from '../context/AppContext'
 
 // Seat selection page for a chosen movie date and showtime.
 const SeatLayout = () => {
+  
   const groupRows = [["A", "B"], ["C", "D"], ["E", "F"], ["G", "H"], ["I", "J"]]
 
   const { id, date } = useParams()
   const [selectedSeats, setSelectedSeats] = useState([])
   const [selectedTime, setSelectedTime] = useState(null)
   const [show, setShow] = useState(null)
+  const [occupiedSeats, setOccupiedSeats] = useState([])
 
   const navigate = useNavigate()
-  const { shows, axios, getToken, user } = useAppContext()
+
+  const { shows, axios, getToken, user } = useAppContext();
 
   const getShow = async () => {
-    const show = shows.find(show => show._id === id)
 
-    if (show) {
-      setShow({
-        movie: show,
-        dateTime: dummyDateTimeData
-      })
+    try {
+
+      const { data } = await axios.get(`/api/show/${id}`)
+
+      if (data.success) {
+        setShow(data)
+      }
+    } catch (error) {
+      console.log(error);
+      
     }
   }
 
@@ -38,6 +48,10 @@ const SeatLayout = () => {
 
     if (!selectedSeats.includes(seatId) && selectedSeats.length >= 5) {
       return toast.error('You can only select 5 seats')
+    }
+
+    if(occupiedSeats.includes(seatId)){
+      return toast('This seat is already booked')
     }
 
     setSelectedSeats(prev =>
@@ -57,9 +71,10 @@ const SeatLayout = () => {
             <button
               key={seatId}
               onClick={() => handleSeatClick(seatId)}
-              className={`h-8 w-8 rounded border border-primary/60 cursor-pointer ${
-                selectedSeats.includes(seatId) && 'bg-primary text-white'
-              }`}
+              className={`h-8 w-8 rounded border border-primary/60 cursor-pointer 
+              ${selectedSeats.includes(seatId) && 'bg-primary text-white'}
+              ${occupiedSeats.includes(seatId) && "opacity-50" }
+              `}
             >
               {seatId}
             </button>
@@ -69,9 +84,44 @@ const SeatLayout = () => {
     </div>
   )
 
+  const getOccupiedSeats = async () => {
+    try {
+      console.log('selectedTime:', selectedTime)
+      console.log('showId envoyé:', selectedTime?.showId)
+
+      const { data } = await axios.get(
+        `/api/booking/seats/${selectedTime.showId}`
+      )
+
+      console.log('Réponse API:', data)
+
+      if (data.success) {
+        setOccupiedSeats(data.occupiedSeats)
+      } else {
+        toast.error(data.message)
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  const bookTickets = async () => {
+    try {
+      
+    } catch (error) {
+      toast.error(error.message)
+    }
+  }
+
   useEffect(() => {
     getShow()
   }, [id, shows])
+
+  useEffect(() => {
+    if (selectedTime) {
+      getOccupiedSeats()
+    }
+  }, [selectedTime])
 
   return show ? (
     <div className='flex flex-col md:flex-row px-6 md:px-16 lg:px-40 py-30 md:pt-50'>

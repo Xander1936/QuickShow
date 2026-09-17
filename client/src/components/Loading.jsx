@@ -1,3 +1,5 @@
+// IMPORTANT: This module is part of the QuickShow application. It contains the core UI or server logic for this feature and should remain behaviorally identical while editing.
+
 
 // Shared loading indicator displayed while page data is being prepared.
 const Loading = () => {

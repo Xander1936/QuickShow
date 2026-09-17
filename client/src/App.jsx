@@ -1,3 +1,5 @@
+// IMPORTANT: This module is part of the QuickShow application. It contains the core UI or server logic for this feature and should remain behaviorally identical while editing.
+
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'

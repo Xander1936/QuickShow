@@ -1,3 +1,5 @@
+// IMPORTANT: This module is part of the QuickShow application. It contains the core UI or server logic for this feature and should remain behaviorally identical while editing.
+
 import { createContext, useContext, useEffect, useState } from 'react';
 import axios from "axios";
 import { useAuth, useUser } from '@clerk/react';

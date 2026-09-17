@@ -1,3 +1,5 @@
+// IMPORTANT: This module is part of the QuickShow application. It contains the core UI or server logic for this feature and should remain behaviorally identical while editing.
+
 // Entry point for the Vite React client.
 // - Mounts the application into the `#root` element.
 // - Wraps the app with `BrowserRouter` for client-side routing.
