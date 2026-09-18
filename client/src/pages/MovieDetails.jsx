@@ -21,10 +21,10 @@ const DEFAULT_CAST_IMAGE = 'https://media.istockphoto.com/id/2151669184/vector/v
 // This component displays the selected movie's details, cast members, and related actions.
 const MovieDetails = () => {
 
-  const navigate = useNavigate()
-  const { id } = useParams()
-  const [show, setShow] = useState(null)
-  const [casts, setCasts] = useState([])
+  const navigate = useNavigate();
+  const { id } = useParams();
+  const [show, setShow] = useState(null);
+  const [casts, setCasts] = useState([]);
 
   const { shows, axios, getToken, user, fetchFavoriteMovies, favoriteMovies, image_base_url } = useAppContext()
   const isFavorite = favoriteMovies.some((movie) => movie._id === id)
