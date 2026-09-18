@@ -29,7 +29,7 @@ const SeatLayout = () => {
   const getShow = async () => {
 
     try {
-
+      // Make the API Call
       const { data } = await axios.get(`/api/show/${id}`)
 
       if (data.success) {
@@ -107,7 +107,23 @@ const SeatLayout = () => {
 
   const bookTickets = async () => {
     try {
-      
+      if(!user) return toast.error('Please login to proceed')
+
+      if(!selectedTime || !selectedSeats.length) return toast.error('Please select a time and seats.');
+
+      const {data} = await axios.post(
+        '/api/booking/create', 
+        {showId: selectedTime.showId, selectedSeats},
+        {headers: {  Authorization:  `Bearer ${await getToken()}`}}
+      );
+
+      if (data.success) {
+        toast.success(data.message)
+        navigate('/my-bookings')
+      }else{
+        toast.error(data.message)
+      }
+
     } catch (error) {
       toast.error(error.message)
     }
@@ -171,7 +187,8 @@ const SeatLayout = () => {
         </div>
 
         <button
-          onClick={()=> navigate('/my-bookings')}
+          // onClick={()=> navigate('/my-bookings')}
+          onClick={bookTickets}
           className='flex items-center gap-1 mt-20 px-10 py-3 text-sm bg-primary hover:bg-primary-dull transition rounded-full font-medium 
           cursor-pointer active:scale-95'
         >
