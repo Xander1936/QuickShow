@@ -32,6 +32,28 @@ const MyBookings = () => {
     setIsLoading(false)
   }
 
+  const payBooking = async (bookingId) => {
+    try {
+      const { data } = await axios.post(
+        '/api/booking/payment-session',
+        { bookingId },
+        {
+          headers: {
+            Authorization: `Bearer ${await getToken()}`
+          }
+        }
+      )
+
+      if (data.success) {
+        window.location.href = data.url
+      } else {
+        console.error(data.message)
+      }
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
   useEffect(()=> {
     if(user) {
       getMyBookings()
@@ -71,7 +93,10 @@ const MyBookings = () => {
             <div className='flex items-center gap-4'>
               <p className='text-2xl font-semibold mb-3'> {currency}{item.amount} </p>
               {!item.isPaid && 
-                <button className='bg-primary px-4 py-1.5 mb-3 text-sm rounded-full font-medium cursor-pointer'>
+                <button 
+                  onClick={() => payBooking(item._id)}
+                  className='bg-primary px-4 py-1.5 mb-3 text-sm rounded-full font-medium cursor-pointer'
+                >
                   Pay Now
                 </button>
               }

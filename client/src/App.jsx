@@ -17,6 +17,7 @@ import Layout from './pages/admin/Layout'
 import { SignIn } from '@clerk/react'
 import { Toaster } from 'react-hot-toast'
 import { useAppContext } from './context/AppContext'
+import Loading from '../../client/src/components/Loading'
 // import './App.css'
 
 
@@ -38,6 +39,7 @@ const App = () => {
         <Route path='/movies/:id' element={<MovieDetails />} />
         <Route path='/movies/:id/:date' element={<SeatLayout />} />
         <Route path='/my-bookings' element={<MyBookings />} />
+        <Route path='/loading/:nextUrl' element={<Loading />} />
         <Route path='/favorite' element={<Favorite />} />
 
         <Route path='/admin/*' element={

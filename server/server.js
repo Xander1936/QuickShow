@@ -11,11 +11,19 @@ import showRouter from './routes/showRoutes.js';
 import bookingRouter from './routes/bookingRoutes.js';
 import adminRouter from './routes/adminRoutes.js';
 import userRouter from './routes/userRoutes.js';
+import { handleStripeWebhook } from './controllers/bookingController.js';
 
 const app = express();
 const port = 3000;
 
 await connectDB()
+
+// Stripe doit recevoir le body brut pour vérifier la signature
+app.post(
+    '/api/booking/webhook',
+    express.raw({ type: 'application/json' }),
+    handleStripeWebhook
+)
 
 // Middleware
 app.use(express.json())

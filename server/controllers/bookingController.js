@@ -2,6 +2,7 @@
 
 import Booking from '../models/Booking.js';
 import Show from '../models/Show.js';
+import stripe from 'stripe';
 
 // Function to check availability of selected seats for a movie
 const checkSeatAvailability = async (showId, selectedSeats) => {
@@ -53,7 +54,36 @@ export const createBooking = async (req, res) => {
         await showData.save();
         
         // Stripe Gateway Initialize
-        res.json({success: true, message: 'Booked successfully'}); 
+        const stripeInstance = new stripe(process.env.STRIPE_SECRET_KEY)
+
+        // Creating line items too for Stripe
+        const line_items = [{
+            price_data: {
+                currency: 'usd',
+                product_data:{
+                    name: showData.movie.title
+                },
+                unit_amount: Math.floor(booking.amount) * 100
+            },
+            quantity: 1
+        }]
+
+        const session = await stripeInstance.checkout.sessions.create({
+            // success_url: `${origin}/loading/my-bookings`,
+            success_url: `${origin}/my-bookings`,
+            cancel_url: `${origin}/my-bookings`,
+            line_items: line_items,
+            mode: 'payment',
+            metadata: {
+                bookingId: booking._id.toString()
+            },
+            expires_at: Math.floor(Date.now() / 1000) + 30 * 60, // Expires in 30 minutes
+        })
+
+        booking.paymentLink = session.url
+        await booking.save()
+
+        res.json({success: true, url: session.url})
 
     } catch (error) {
         console.log(error.message);
@@ -76,3 +106,90 @@ export const getOccupiedSeats = async (req, res) => {
         res.json({success: false, message: error.message});
     }
 }
+
+export const handleStripeWebhook = async (req, res) => {
+    const stripeInstance = new stripe(process.env.STRIPE_SECRET_KEY);
+
+    let event;
+
+    try {
+        const signature = req.headers['stripe-signature'];
+
+        event = stripeInstance.webhooks.constructEvent(
+            req.body,
+            signature,
+            process.env.STRIPE_WEBHOOK_SECRET
+        );
+    } catch (error) {
+        console.error('Stripe webhook signature error:', error.message);
+        return res.status(400).send(`Webhook Error: ${error.message}`);
+    }
+
+    if (event.type === 'checkout.session.completed') {
+        const session = event.data.object;
+
+        if (session.payment_status === 'paid') {
+            await Booking.findByIdAndUpdate(
+                session.metadata.bookingId,
+                { isPaid: true }
+            );
+        }
+    }
+
+    res.json({ received: true });
+};
+
+export const createPaymentSession = async (req, res) => {
+    try {
+        const { userId } = req.auth();
+        const { bookingId } = req.body;
+        const { origin } = req.headers;
+
+        const booking = await Booking.findOne({
+            _id: bookingId,
+            user: userId,
+            isPaid: false
+        }).populate({
+            path: 'show',
+            populate: {
+                path: 'movie'
+            }
+        });
+
+        if (!booking) {
+            return res.json({
+                success: false,
+                message: 'Booking not found or already paid.'
+            });
+        }
+
+        const stripeInstance = new stripe(process.env.STRIPE_SECRET_KEY);
+
+        const session = await stripeInstance.checkout.sessions.create({
+            success_url: `${origin}/my-bookings`,
+            cancel_url: `${origin}/my-bookings`,
+            line_items: [{
+                price_data: {
+                    currency: 'usd',
+                    product_data: {
+                        name: booking.show.movie.title
+                    },
+                    unit_amount: Math.round(booking.amount * 100)
+                },
+                quantity: 1
+            }],
+            mode: 'payment',
+            metadata: {
+                bookingId: booking._id.toString()
+            }
+        });
+
+        booking.paymentLink = session.url;
+        await booking.save();
+
+        res.json({ success: true, url: session.url });
+    } catch (error) {
+        console.error(error.message);
+        res.json({ success: false, message: error.message });
+    }
+};
