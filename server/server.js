@@ -12,6 +12,7 @@ import bookingRouter from './routes/bookingRoutes.js';
 import adminRouter from './routes/adminRoutes.js';
 import userRouter from './routes/userRoutes.js';
 import { handleStripeWebhook } from './controllers/bookingController.js';
+import { stripeWebhooks } from './controllers/stripeWebhooks.js';
 
 const app = express();
 const port = 3000;
@@ -23,6 +24,13 @@ app.post(
     '/api/booking/webhook',
     express.raw({ type: 'application/json' }),
     handleStripeWebhook
+)
+
+// Stripe Webhooks Route
+app.use(
+    '/api/stripe', 
+    express.raw({type: 'application/json'}), 
+    stripeWebhooks
 )
 
 // Middleware

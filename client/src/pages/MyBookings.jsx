@@ -7,30 +7,17 @@ import Loading from '../components/Loading'
 import timeFormat from '../lib/timeFormat'
 import { dateFormat } from '../lib/dateFormat'
 import { useAppContext } from '../context/AppContext'
+import { SignIn } from '@clerk/react'
 
 // Displays the current user's booked movies and ticket information.
 const MyBookings = () => {
   const currency = import.meta.env.VITE_CURRENCY
 
-  const { axios, getToken, user, image_base_url } = useAppContext()
+  const { axios, getToken, user, isLoaded, image_base_url } = useAppContext()
+  const sessionId = new URLSearchParams(window.location.search).get('session_id')
 
   const [bookings, setBookings] = useState([])
   const [isLoading, setIsLoading] = useState(true)
-
-  const getMyBookings = async () => {
-    try {
-      const {data} = await axios.get('/api/user/bookings', {
-        headers: { Authorization: `Bearer ${await getToken()}` }
-      })
-      if(data.success) {
-        setBookings(data.bookings)
-      }
-      
-    } catch (error) {
-      console.log(error)
-    }
-    setIsLoading(false)
-  }
 
   const payBooking = async (bookingId) => {
     try {
@@ -54,11 +41,67 @@ const MyBookings = () => {
     }
   }
 
-  useEffect(()=> {
-    if(user) {
-      getMyBookings()
+  useEffect(() => {
+    if (!isLoaded) return
+    if (!user) {
+      setIsLoading(false)
+      return
     }
-  },[user])
+
+    setIsLoading(true)
+    let isCancelled = false
+
+    const fetchBookings = async () => {
+      try {
+        const { data } = await axios.get('/api/user/bookings', {
+          headers: { Authorization: `Bearer ${await getToken()}` }
+        })
+        if (data.success) {
+          if (!isCancelled) setBookings(data.bookings)
+          return data.bookings
+        }
+      } catch (error) {
+        console.log(error)
+      } finally {
+        if (!isCancelled) setIsLoading(false)
+      }
+      return []
+    }
+
+    const loadBookings = async () => {
+      const initialBookings = await fetchBookings()
+      if (!sessionId || isCancelled) return
+
+      const previouslyPaid = new Set(
+        initialBookings.filter(booking => booking.isPaid).map(booking => booking._id)
+      )
+
+      for (let attempt = 0; attempt < 10; attempt++) {
+        await new Promise(resolve => setTimeout(resolve, 1000))
+        if (isCancelled) return
+
+        const updatedBookings = await fetchBookings()
+        if (updatedBookings.some(
+          booking => booking.isPaid && !previouslyPaid.has(booking._id)
+        )) return
+      }
+    }
+
+    loadBookings()
+    return () => {
+      isCancelled = true
+    }
+  }, [axios, getToken, isLoaded, sessionId, user])
+
+  if (!isLoaded) return <Loading />
+
+  if (!user) {
+    return (
+      <div className='min-h-[80vh] flex items-center justify-center'>
+        <SignIn fallbackRedirect={`/my-bookings${window.location.search}`} />
+      </div>
+    )
+  }
 
   return !isLoading ? (
     <div className='relative px-6 md:px-16 lg:px-40 pt-30 md:pt-40 min-h-[80vh]'>

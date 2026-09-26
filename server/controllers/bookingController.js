@@ -70,7 +70,7 @@ export const createBooking = async (req, res) => {
 
         const session = await stripeInstance.checkout.sessions.create({
             // success_url: `${origin}/loading/my-bookings`,
-            success_url: `${origin}/my-bookings`,
+            success_url: `${origin}/my-bookings?session_id={CHECKOUT_SESSION_ID}`,
             cancel_url: `${origin}/my-bookings`,
             line_items: line_items,
             mode: 'payment',
@@ -165,23 +165,26 @@ export const createPaymentSession = async (req, res) => {
 
         const stripeInstance = new stripe(process.env.STRIPE_SECRET_KEY);
 
-        const session = await stripeInstance.checkout.sessions.create({
-            success_url: `${origin}/my-bookings`,
-            cancel_url: `${origin}/my-bookings`,
-            line_items: [{
-                price_data: {
-                    currency: 'usd',
-                    product_data: {
-                        name: booking.show.movie.title
-                    },
-                    unit_amount: Math.round(booking.amount * 100)
+        const line_items = [{
+            price_data: {
+                currency: 'usd',
+                product_data: {
+                    name: booking.show.movie.title
                 },
-                quantity: 1
-            }],
+                unit_amount: Math.floor(booking.amount) * 100
+            },
+            quantity: 1
+        }];
+
+        const session = await stripeInstance.checkout.sessions.create({
+            success_url: `${origin}/my-bookings?session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `${origin}/my-bookings`,
+            line_items: line_items,
             mode: 'payment',
             metadata: {
                 bookingId: booking._id.toString()
-            }
+            },
+            expires_at: Math.floor(Date.now() / 1000) + 30 * 60, // Expires in 30 minutes
         });
 
         booking.paymentLink = session.url;
