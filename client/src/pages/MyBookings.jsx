@@ -8,6 +8,7 @@ import timeFormat from '../lib/timeFormat'
 import { dateFormat } from '../lib/dateFormat'
 import { useAppContext } from '../context/AppContext'
 import { SignIn } from '@clerk/react'
+import { Link } from 'react-router-dom'
 
 // Displays the current user's booked movies and ticket information.
 const MyBookings = () => {
@@ -136,17 +137,23 @@ const MyBookings = () => {
             <div className='flex items-center gap-4'>
               <p className='text-2xl font-semibold mb-3'> {currency}{item.amount} </p>
               {!item.isPaid && 
-                <button 
-                  onClick={() => payBooking(item._id)}
+                <Link 
+                  to={item.paymentLink}
                   className='bg-primary px-4 py-1.5 mb-3 text-sm rounded-full font-medium cursor-pointer'
                 >
                   Pay Now
-                </button>
+                </Link>
               }
             </div>
             <div className='text-sm'>
-              <p><span className='text-gray-400'>Total Tickets:</span> {item.bookedSeats.length}.</p>
-              <p><span className='text-gray-400'>Seat Number:</span> {item.bookedSeats.join(", ")}.</p>
+              <p>
+                <span className='text-gray-400'>Total Tickets:</span>
+                 {item.bookedSeats.length}.
+              </p>
+              <p>
+                <span className='text-gray-400'>Seat Number:</span> 
+                  {item.bookedSeats.join(", ")}.
+              </p>
             </div>
           </div>
         </div>
