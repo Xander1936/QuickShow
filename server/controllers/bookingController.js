@@ -37,7 +37,7 @@ export const createBooking = async (req, res) => {
         // Get the show details
         const showData = await Show.findById(showId).populate('movie');
 
-        // Create a new booking
+        // Create a new booking (isPaid will default to false)
         const booking = await Booking.create({
             user: userId,
             show: showId,
@@ -196,3 +196,4 @@ export const createPaymentSession = async (req, res) => {
         res.json({ success: false, message: error.message });
     }
 };
+
