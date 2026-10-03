@@ -35,14 +35,7 @@ app.use(
 
 // Middleware
 app.use(express.json())
-// app.use(cors())
-// const cors = require('cors');
-
-app.use(cors({
-  origin: 'https://quick-show-rust-six.vercel.app',
-  credentials: true
-}));
-
+app.use(cors())
 app.use(clerkMiddleware())
 
 // API Routes and paths
