@@ -1,5 +1,6 @@
 // IMPORTANT: This module is part of the QuickShow application. It contains the core UI or server logic for this feature and should remain behaviorally identical while editing.
 
+import { inngest } from '../inngest/index.js';
 import Booking from '../models/Booking.js';
 import Show from '../models/Show.js';
 import stripe from 'stripe';
@@ -82,6 +83,14 @@ export const createBooking = async (req, res) => {
 
         booking.paymentLink = session.url
         await booking.save()
+
+        // Run Inngest Sheduler Function to check payment status after 10 minutes
+        await inngest.send({
+            name: "app/checkpayment",
+            data: {
+                bookingId: booking._id.toString()
+            }
+        })
 
         res.json({success: true, url: session.url})
 
