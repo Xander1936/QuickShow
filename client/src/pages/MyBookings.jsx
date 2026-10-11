@@ -1,14 +1,13 @@
 // IMPORTANT: This module is part of the QuickShow application. It contains the core UI or server logic for this feature and should remain behaviorally identical while editing.
 
 import { useEffect, useState } from 'react'
-import { dummyBookingData } from '../assets/assets'
 import BlurCircle from '../components/BlurCircle'
 import Loading from '../components/Loading'
 import timeFormat from '../lib/timeFormat'
 import { dateFormat } from '../lib/dateFormat'
 import { useAppContext } from '../context/AppContext'
 import { SignIn } from '@clerk/react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 
 // Displays the current user's booked movies and ticket information.
@@ -35,7 +34,7 @@ const MyBookings = () => {
       )
 
       if (data.success) {
-        window.location.href = data.url
+        window.location.assign(data.url)
       } else {
         console.error(data.message)
       }

@@ -3,6 +3,7 @@
 import { Inngest } from "inngest";
 import User from "../models/User.js";
 import Booking from "../models/Booking.js";
+import Show from "../models/Show.js";
 
 // Create a client to send and receive events
 export const inngest = new Inngest({ id: "movie-ticket-booking" });
@@ -58,8 +59,10 @@ const syncUserUpdation = inngest.createFunction(
 // Inngest Function to cancel booking and release seats of show
 //  after 10 minutes of booking created if payment is not made
 const releaseSeatsAndDeleteBooking = inngest.createFunction(
-    {id: 'release-seats-delete-booking'},
-    {event: "app/checkpayment"},
+    {
+        id: 'release-seats-delete-booking',
+        triggers: { event: "app/checkpayment" }
+    },
     async ({event, step}) => {
         const tenMinutesLater = new Date(Date.now() + 10 * 60 * 1000);
         await step.sleepUntil('wait-for-10-minutes', tenMinutesLater);
