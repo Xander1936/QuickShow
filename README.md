@@ -1,157 +1,101 @@
 # QuickShow
 
-QuickShow is a movie discovery and cinema ticket booking application. The repository contains a React/Vite client and an Express/MongoDB server. Users can browse movies, inspect details, choose showtimes and seats, and review their bookings. Administrators can manage shows through the admin area and protected API endpoints.
+QuickShow est une application web de découverte de films et de réservation de places de cinéma. Elle permet de consulter les séances disponibles, choisir jusqu’à cinq sièges, payer avec Stripe, retrouver ses réservations et gérer les séances depuis un espace administrateur.
 
-## Features
+Le dépôt contient deux applications indépendantes : un client React/Vite et une API Express/MongoDB.
 
-- Featured movies, movie catalog, details, cast, ratings and trailers.
-- Showtime, date and seat selection with a maximum of five seats.
-- Favorites and user booking views.
-- Clerk authentication and user synchronization through Inngest.
-- Admin pages for adding shows, listing shows and listing bookings.
-- TMDB integration for now-playing movies and movie details.
-- Responsive interface built with Tailwind CSS and Lucide icons.
+## Aperçu fonctionnel
 
-## Stack
+- Catalogue de films et pages de détail alimentés par les séances enregistrées.
+- Choix de date, d’horaire et de sièges ; les sièges réservés ne sont plus sélectionnables.
+- Paiement via une page Stripe Checkout et confirmation au retour dans l’application.
+- Liste des réservations et possibilité de reprendre un paiement non finalisé.
+- Gestion des favoris dans les métadonnées privées Clerk.
+- Espace administrateur : ajout de séances, liste des séances, réservations et indicateurs.
+- Synchronisation des utilisateurs Clerk vers MongoDB et libération des sièges impayés après dix minutes avec Inngest.
 
-- Client: React 19, Vite, React Router, Tailwind CSS, Clerk, React Player and React Hot Toast.
-- Server: Node.js, Express, MongoDB with Mongoose, Axios, Clerk Express and Inngest.
-- External services: TMDB for movie data, Clerk for authentication, MongoDB for persistence.
-
-## Requirements
-
-- Node.js and npm.
-- A MongoDB database.
-- A TMDB API bearer token.
-- A Clerk application and publishable key.
-- An Inngest environment for user synchronization when using those events.
-
-## Project Structure
+## Architecture
 
 ```text
-QuickShow/
-├── client/                 # React/Vite frontend
-│   ├── public/             # Static assets
-│   └── src/                # Components, pages, assets and utilities
-├── server/                 # Express API
-│   ├── configs/            # Database configuration
-│   ├── controllers/        # API handlers
-│   ├── inngest/            # Clerk user synchronization functions
-│   ├── models/             # Mongoose models
-│   └── routes/             # Express routes
-└── README.md
+client/  React 19 + Vite + React Router + Tailwind CSS
+   |  HTTP / jeton Clerk
+   v
+server/  Express 5 + Mongoose
+   |---- MongoDB : films, séances, réservations, utilisateurs
+   |---- TMDB : films actuellement à l’affiche et métadonnées
+   |---- Stripe : Checkout et webhooks de paiement
+   `---- Clerk + Inngest : identité, rôles et événements différés
 ```
 
-## Configuration
+| Dossier | Rôle | Documentation |
+| --- | --- | --- |
+| [client/](./client/) | Interface web React/Vite | [README client](./client/README.md) |
+| [server/](./server/) | API REST, logique métier et intégrations | [README serveur](./server/README.md) |
 
-Create `client/.env`:
+## Prérequis
 
-```env
-VITE_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
-VITE_CURRENCY=$
-```
+- Node.js 20 LTS ou une version plus récente compatible avec Vite 8.
+- npm.
+- Une base MongoDB.
+- Un projet Clerk.
+- Un jeton d’accès TMDB (Bearer token).
+- Des clés Stripe pour utiliser les réservations payantes.
+- Un environnement Inngest pour la synchronisation Clerk et la tâche de libération des sièges.
 
-Create `server/.env`:
+## Installation locale
 
-```env
-MONGODB_URI=mongodb_connection_string
-TMDB_API_KEY=tmdb_bearer_token
-```
+1. Installez les dépendances de chaque application.
 
-Do not commit environment files or secret keys.
+   ```bash
+   cd client
+   npm install
+   cd ../server
+   npm install
+   ```
 
-## Installation
+2. Ajoutez les variables décrites dans les README du [client](./client/README.md#variables-denvironnement) et du [serveur](./server/README.md#variables-denvironnement).
 
-Install dependencies in both applications:
+3. Démarrez l’API dans un premier terminal.
 
-```bash
-cd client
-npm install
-cd ../server
-npm install
-```
+   ```bash
+   cd server
+   npm run server
+   ```
 
-Start the API from `server/`:
+4. Démarrez le client dans un second terminal.
 
-```bash
-npm run server
-```
+   ```bash
+   cd client
+   npm run dev
+   ```
 
-The API listens on `http://localhost:3000`.
+Par défaut, l’API écoute sur `http://localhost:3000`. Vite affiche l’URL de l’interface dans le terminal, habituellement `http://localhost:5173`.
 
-Start the frontend in a second terminal:
+## Parcours principaux
 
-```bash
-cd client
-npm run dev
-```
-
-Vite prints the local frontend URL in the terminal.
-
-## Client Commands
-
-Run inside `client/`:
-
-```bash
-npm run dev       # Start the Vite development server
-npm run build     # Create a production build
-npm run preview   # Preview the production build
-npm run lint      # Run ESLint
-```
-
-## Server Commands
-
-Run inside `server/`:
-
-```bash
-npm run server    # Start with Nodemon
-npm start         # Start with Node.js
-```
-
-## Frontend Routes
-
-| Route | Purpose |
+| Parcours | Description |
 | --- | --- |
-| `/` | Home page with featured and now-playing content |
-| `/movies` | Movie catalog |
-| `/movies/:id` | Movie details and date selection |
-| `/movies/:id/:date` | Showtime and seat selection |
-| `/my-bookings` | User bookings |
-| `/favorite` | Favorite movies |
-| `/admin` | Admin dashboard |
-| `/admin/add-shows` | Add movie shows |
-| `/admin/list-shows` | List shows |
-| `/admin/list-bookings` | List bookings |
+| Visiteur | Parcourt l’accueil, les films et leurs détails. |
+| Utilisateur connecté | Ajoute des favoris, choisit une séance et des places, puis règle sa réservation. |
+| Administrateur Clerk | Accède à `/admin`, importe un film TMDB et crée ses créneaux de projection. |
 
-## API Endpoints
+Les rôles sont lus depuis `privateMetadata.role` de Clerk. La valeur attendue pour un administrateur est `admin`.
 
-Base URL: `http://localhost:3000`
+## Commandes utiles
 
-| Method | Endpoint | Purpose | Access |
-| --- | --- | --- | --- |
-| `GET` | `/api/show/now-playing` | Fetch now-playing movies from TMDB | Admin |
-| `POST` | `/api/show/add` | Add a movie and its showtimes | Admin |
-| `GET` | `/api/show/all` | Return upcoming shows grouped by movie | Public |
-| `GET` | `/api/show/:movieId` | Return a movie and its upcoming showtimes | Public |
-| `GET` | `/api/inngest` | Inngest function endpoint | Service |
+```bash
+# depuis client/
+npm run dev
+npm run build
+npm run lint
 
-Example body for `POST /api/show/add`:
-
-```json
-{
-  "movieId": "550",
-  "showPrice": 10,
-  "showsInput": [
-    {
-      "date": "2026-09-10",
-      "times": ["10:00", "14:00"]
-    }
-  ]
-}
+# depuis server/
+npm run server
+npm start
 ```
 
-The protected admin endpoints require the Clerk authentication context configured by the server.
+## Déploiement
 
-## Current Status
+Les deux applications contiennent une configuration Vercel : [client/vercel.json](./client/vercel.json) réécrit les routes frontend vers l’entrée Vite, tandis que [server/vercel.json](./server/vercel.json) expose [server/server.js](./server/server.js) comme fonction Node. Configurez les variables d’environnement de chaque application dans leur projet Vercel respectif.
 
-The client still contains local demonstration data in `client/src/assets/assets.js` for several screens. The server supports movie and show persistence, while booking persistence, payment processing and some admin workflows remain under development.
+Les fichiers `.env*` sont ignorés par Git : ne versionnez jamais de clé Clerk, Stripe, TMDB ou de chaîne MongoDB.
