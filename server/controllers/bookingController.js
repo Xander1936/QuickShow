@@ -206,3 +206,32 @@ export const createPaymentSession = async (req, res) => {
     }
 };
 
+export const verifyPaymentSession = async (req, res) => {
+    try {
+        const { userId } = req.auth();
+        const { sessionId } = req.body;
+
+        if (!sessionId) {
+            return res.json({ success: false, message: 'Payment session is missing.' });
+        }
+
+        const stripeInstance = new stripe(process.env.STRIPE_SECRET_KEY);
+        const session = await stripeInstance.checkout.sessions.retrieve(sessionId);
+        const bookingId = session.metadata?.bookingId;
+
+        if (!bookingId || session.payment_status !== 'paid') {
+            return res.json({ success: true, isPaid: false });
+        }
+
+        const booking = await Booking.findOneAndUpdate(
+            { _id: bookingId, user: userId },
+            { isPaid: true, paymentLink: '' },
+            { new: true }
+        );
+
+        res.json({ success: true, isPaid: Boolean(booking) });
+    } catch (error) {
+        console.error(error.message);
+        res.json({ success: false, message: error.message });
+    }
+};

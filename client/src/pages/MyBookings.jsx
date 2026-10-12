@@ -71,40 +71,21 @@ const MyBookings = () => {
     }
 
     const loadBookings = async () => {
-      const initialBookings = await fetchBookings()
+      await fetchBookings()
       if (!sessionId || isCancelled) return
 
-      const previouslyPaid = new Set(
-        initialBookings.filter(booking => booking.isPaid).map(booking => booking._id)
+      const { data: paymentData } = await axios.post(
+        '/api/booking/verify-payment',
+        { sessionId },
+        { headers: { Authorization: `Bearer ${await getToken()}` } }
       )
 
-      for (let attempt = 0; attempt < 10; attempt++) {
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        if (isCancelled) return
+      if (isCancelled) return
 
-        const updatedBookings = await fetchBookings()
-        
-        // Check if any booking that was not paid is now paid
-        const newlyPaidBooking = updatedBookings.find(
-          booking => booking.isPaid && !previouslyPaid.has(booking._id)
-        )
-
-        if (newlyPaidBooking) {
-          toast.success('Payment confirmed!')
-          navigate('/my-bookings', { replace: true })
-          return
-        }
-
-        // Check if session was already paid (user returning after payment)
-        const alreadyPaidBooking = updatedBookings.find(
-          booking => booking.isPaid && previouslyPaid.has(booking._id)
-        )
-
-        if (alreadyPaidBooking && attempt === 0) {
-          toast.success('Payment already completed!')
-          navigate('/my-bookings', { replace: true })
-          return
-        }
+      if (paymentData.success && paymentData.isPaid) {
+        await fetchBookings()
+        toast.success('Payment confirmed!')
+        navigate('/my-bookings', { replace: true })
       }
     }
 
@@ -156,7 +137,7 @@ const MyBookings = () => {
           >
             <div className='flex items-center gap-4'>
               <p className='text-2xl font-semibold mb-3'> {currency}{item.amount} </p>
-              {!item.isPaid && 
+              {item.isPaid === false &&
                 <button 
                   onClick={() => payBooking(item._id)}
                   className='bg-primary px-4 py-1.5 mb-3 text-sm rounded-full font-medium cursor-pointer'

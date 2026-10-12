@@ -120,7 +120,6 @@ const SeatLayout = () => {
       if (data.success) {
         toast.success('Booking created! Proceed to checkout.');
         navigate('/my-bookings');
-        window.location.href = data.url;
       }else{
         toast.error(data.message)
       }
