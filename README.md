@@ -1,50 +1,50 @@
 # QuickShow
 
-QuickShow est une application web de découverte de films et de réservation de places de cinéma. Elle permet de consulter les séances disponibles, choisir jusqu’à cinq sièges, payer avec Stripe, retrouver ses réservations et gérer les séances depuis un espace administrateur.
+QuickShow is a full-stack movie discovery and cinema ticket-booking application. Visitors can browse scheduled movies, authenticated users can save favourites and reserve seats, and administrators can manage movie showtimes and monitor bookings.
 
-Le dépôt contient deux applications indépendantes : un client React/Vite et une API Express/MongoDB.
+## Applications
 
-## Aperçu fonctionnel
+| Application | Purpose | Documentation |
+| --- | --- | --- |
+| [client/](./client/) | React single-page application | [Client README](./client/README.md) |
+| [server/](./server/) | Express REST API and integrations | [Server README](./server/README.md) |
 
-- Catalogue de films et pages de détail alimentés par les séances enregistrées.
-- Choix de date, d’horaire et de sièges ; les sièges réservés ne sont plus sélectionnables.
-- Paiement via une page Stripe Checkout et confirmation au retour dans l’application.
-- Liste des réservations et possibilité de reprendre un paiement non finalisé.
-- Gestion des favoris dans les métadonnées privées Clerk.
-- Espace administrateur : ajout de séances, liste des séances, réservations et indicateurs.
-- Synchronisation des utilisateurs Clerk vers MongoDB et libération des sièges impayés après dix minutes avec Inngest.
+## Features
+
+- Browse upcoming movies and view details, cast information, trailers, and showtimes.
+- Select a showtime and up to five seats; occupied seats cannot be selected.
+- Create Stripe Checkout payment sessions and view or retry unpaid bookings.
+- Save favourite movies in Clerk user metadata.
+- Provide an admin dashboard for adding shows and reviewing show and booking data.
+- Synchronise Clerk users into MongoDB and remove unpaid bookings after ten minutes through Inngest.
 
 ## Architecture
 
 ```text
-client/  React 19 + Vite + React Router + Tailwind CSS
-   |  HTTP / jeton Clerk
+client/  React + Vite + Clerk
+   |
+   | HTTP requests with Clerk session tokens
    v
-server/  Express 5 + Mongoose
-   |---- MongoDB : films, séances, réservations, utilisateurs
-   |---- TMDB : films actuellement à l’affiche et métadonnées
-   |---- Stripe : Checkout et webhooks de paiement
-   `---- Clerk + Inngest : identité, rôles et événements différés
+server/  Express + Mongoose
+   |-- MongoDB: users, movies, shows, and bookings
+   |-- TMDB: movie catalogue and metadata
+   |-- Stripe: Checkout payment sessions and webhooks
+   `-- Inngest: Clerk user events and unpaid-booking cleanup
 ```
 
-| Dossier | Rôle | Documentation |
-| --- | --- | --- |
-| [client/](./client/) | Interface web React/Vite | [README client](./client/README.md) |
-| [server/](./server/) | API REST, logique métier et intégrations | [README serveur](./server/README.md) |
+## Prerequisites
 
-## Prérequis
+- Node.js 20 or later
+- npm
+- A MongoDB instance
+- A Clerk application
+- A TMDB API read-access token
+- Stripe API and webhook keys for payment support
+- An Inngest environment when running asynchronous functions
 
-- Node.js 20 LTS ou une version plus récente compatible avec Vite 8.
-- npm.
-- Une base MongoDB.
-- Un projet Clerk.
-- Un jeton d’accès TMDB (Bearer token).
-- Des clés Stripe pour utiliser les réservations payantes.
-- Un environnement Inngest pour la synchronisation Clerk et la tâche de libération des sièges.
+## Run Locally
 
-## Installation locale
-
-1. Installez les dépendances de chaque application.
+1. Install the dependencies for both applications.
 
    ```bash
    cd client
@@ -53,49 +53,30 @@ server/  Express 5 + Mongoose
    npm install
    ```
 
-2. Ajoutez les variables décrites dans les README du [client](./client/README.md#variables-denvironnement) et du [serveur](./server/README.md#variables-denvironnement).
+2. Create the environment files described in the [client setup guide](./client/README.md#environment-variables) and [server setup guide](./server/README.md#environment-variables).
 
-3. Démarrez l’API dans un premier terminal.
+3. Start the API in one terminal.
 
    ```bash
    cd server
    npm run server
    ```
 
-4. Démarrez le client dans un second terminal.
+4. Start the client in a second terminal.
 
    ```bash
    cd client
    npm run dev
    ```
 
-Par défaut, l’API écoute sur `http://localhost:3000`. Vite affiche l’URL de l’interface dans le terminal, habituellement `http://localhost:5173`.
+The API listens on `http://localhost:3000`. Vite prints the client URL in the terminal, normally `http://localhost:5173`.
 
-## Parcours principaux
+## Roles
 
-| Parcours | Description |
-| --- | --- |
-| Visiteur | Parcourt l’accueil, les films et leurs détails. |
-| Utilisateur connecté | Ajoute des favoris, choisit une séance et des places, puis règle sa réservation. |
-| Administrateur Clerk | Accède à `/admin`, importe un film TMDB et crée ses créneaux de projection. |
+Users are authenticated with Clerk. An administrator must have `admin` as the value of `privateMetadata.role` in Clerk. Admin-only API endpoints and the `/admin` client area use this role.
 
-Les rôles sont lus depuis `privateMetadata.role` de Clerk. La valeur attendue pour un administrateur est `admin`.
+## Deployment
 
-## Commandes utiles
+The client and server have separate Vercel configurations. Deploy them as separate projects, configure their own environment variables, set `VITE_BASE_URL` to the deployed API URL, and register the public Stripe and Inngest endpoints.
 
-```bash
-# depuis client/
-npm run dev
-npm run build
-npm run lint
-
-# depuis server/
-npm run server
-npm start
-```
-
-## Déploiement
-
-Les deux applications contiennent une configuration Vercel : [client/vercel.json](./client/vercel.json) réécrit les routes frontend vers l’entrée Vite, tandis que [server/vercel.json](./server/vercel.json) expose [server/server.js](./server/server.js) comme fonction Node. Configurez les variables d’environnement de chaque application dans leur projet Vercel respectif.
-
-Les fichiers `.env*` sont ignorés par Git : ne versionnez jamais de clé Clerk, Stripe, TMDB ou de chaîne MongoDB.
+Do not commit `.env` files or publish Clerk, Stripe, TMDB, MongoDB, or Inngest secrets.

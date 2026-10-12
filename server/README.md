@@ -1,71 +1,90 @@
-# QuickShow — Serveur
+# QuickShow Server
 
-API Express de QuickShow. Elle conserve les films, séances, utilisateurs et réservations dans MongoDB ; interroge TMDB pour les données de films ; utilise Clerk pour l’identité et les rôles ; et crée les paiements Stripe Checkout.
+The QuickShow server is an Express REST API for movies, showtimes, cinema bookings, administration, payments, and asynchronous events. It stores application data in MongoDB, retrieves movie metadata from TMDB, uses Clerk for identity and roles, and uses Stripe Checkout for payments.
 
-## Technologies
+## Stack
 
-- Node.js, Express 5 et Mongoose 9.
-- MongoDB pour les données métier.
-- Clerk Express pour l’authentification et les métadonnées de rôle.
-- TMDB via Axios pour le catalogue et les crédits d’un film.
-- Stripe pour Checkout et les webhooks.
-- Inngest pour synchroniser les utilisateurs Clerk et supprimer les réservations impayées après dix minutes.
+- Node.js and Express 5
+- MongoDB and Mongoose
+- Clerk Express
+- TMDB and Axios
+- Stripe Checkout and Stripe webhooks
+- Inngest
 
-## Installation et démarrage
+## Requirements
 
-Depuis ce dossier :
+- Node.js 20 or later
+- npm
+- MongoDB
+- Clerk, TMDB, Stripe, and Inngest credentials
+
+## Installation
+
+From this directory:
 
 ```bash
 npm install
 npm run server
 ```
 
-`npm run server` utilise Nodemon. Pour lancer Node sans surveillance de fichiers :
+`npm run server` starts Nodemon for development. To run the application with Node directly:
 
 ```bash
 npm start
 ```
 
-Le serveur écoute actuellement sur `http://localhost:3000`.
+The server listens on `http://localhost:3000`.
 
-## Variables d’environnement
+## Environment Variables
 
-Créez [`.env`](./.env) dans ce dossier, sans le committer :
+Create a `.env` file in this directory:
 
 ```env
 MONGODB_URI=mongodb_connection_string_without_database_name
-TMDB_API_KEY=tmdb_bearer_token
+TMDB_API_KEY=tmdb_read_access_token
 CLERK_SECRET_KEY=sk_test_...
 STRIPE_SECRET_KEY=sk_test_...
 STRIPE_WEBHOOK_SECRET=whsec_...
+INNGEST_EVENT_KEY=...
+INNGEST_SIGNING_KEY=...
 ```
 
-La connexion MongoDB ajoute `/quickshow` à `MONGODB_URI`. Fournissez donc l’URI du cluster ou du serveur, sans base finale si vous souhaitez utiliser ce nom de base.
+The database connection appends `/quickshow` to `MONGODB_URI`; provide the server or cluster URI without a final database name when using the default database name.
 
-Selon votre mode d’exécution Inngest, configurez aussi les clés demandées par votre projet Inngest (par exemple `INNGEST_EVENT_KEY` et `INNGEST_SIGNING_KEY`).
+`INNGEST_EVENT_KEY` and `INNGEST_SIGNING_KEY` are required when your Inngest deployment mode requires them.
 
-## API
+## Authentication and Roles
 
-Base locale : `http://localhost:3000`
+Clerk middleware is applied to all API routes. Requests that need a signed-in user should send a Clerk session token:
 
-### Santé et Inngest
+```http
+Authorization: Bearer <clerk-session-token>
+```
 
-| Méthode | Chemin | Description |
+Admin routes use `privateMetadata.role` from Clerk. Set it to `admin` for administrator accounts.
+
+## API Reference
+
+Base URL: `http://localhost:3000`
+
+### Health and Inngest
+
+| Method | Path | Description |
 | --- | --- | --- |
-| `GET` | `/` | Réponse simple indiquant que le serveur est en ligne. |
-| `ALL` | `/api/inngest` | Endpoint Inngest pour les événements et fonctions déclarées. |
+| `GET` | `/` | Basic server health response. |
+| `ALL` | `/api/inngest` | Inngest serve endpoint for registered functions and events. |
 
-### Séances et films
+### Movies and Shows
 
-| Méthode | Chemin | Accès | Description |
-| --- | --- | --- |
-| `GET` | `/api/show` | Public | Films ayant une séance future. |
-| `GET` | `/api/show/all` | Public | Alias de la liste des films programmés. |
-| `GET` | `/api/show/:movieId` | Public | Film et créneaux futurs regroupés par date. |
-| `GET` | `/api/show/now-playing` | Admin | Films actuellement à l’affiche depuis TMDB. |
-| `POST` | `/api/show/add` | Admin | Enregistre un film et crée ses séances. |
+| Method | Path | Access | Description |
+| --- | --- | --- | --- |
+| `GET` | `/api/show` | Public | List unique movies with future shows. |
+| `GET` | `/api/show/all` | Public | Alias for the scheduled-movie list. |
+| `GET` | `/api/show/:movieId` | Public | Return movie details and future showtimes grouped by date. |
+| `GET` | `/api/show/now-playing` | Admin | Retrieve currently playing movies from TMDB. |
+| `POST` | `/api/show/add` | Admin | Store a TMDB movie if needed and create its showtimes. |
 
-Exemple de charge utile pour `POST /api/show/add` :
+Example request body for `POST /api/show/add`:
 
 ```json
 {
@@ -80,58 +99,55 @@ Exemple de charge utile pour `POST /api/show/add` :
 }
 ```
 
-### Réservations et paiement
+### Bookings and Payments
 
-| Méthode | Chemin | Accès | Description |
+| Method | Path | Access | Description |
 | --- | --- | --- | --- |
-| `GET` | `/api/booking/seats/:showId` | Public | Sièges déjà occupés pour une séance. |
-| `POST` | `/api/booking/create` | Connecté | Crée une réservation, bloque les sièges et renvoie l’URL Stripe. |
-| `POST` | `/api/booking/payment-session` | Connecté | Crée une nouvelle session Stripe pour une réservation impayée. |
-| `POST` | `/api/booking/verify-payment` | Connecté | Vérifie une session Checkout au retour du client. |
-| `POST` | `/api/booking/webhook` | Stripe | Webhook Checkout, avec corps brut. |
-| `POST` | `/api/stripe` | Stripe | Webhook Stripe alternatif, avec corps brut. |
+| `GET` | `/api/booking/seats/:showId` | Public | List occupied seat IDs for a show. |
+| `POST` | `/api/booking/create` | Authenticated | Create an unpaid booking, reserve its seats, and create a Stripe Checkout session. |
+| `POST` | `/api/booking/payment-session` | Authenticated | Create a new Checkout session for the user's unpaid booking. |
+| `POST` | `/api/booking/verify-payment` | Authenticated | Verify a returned Checkout session and update the booking. |
+| `POST` | `/api/booking/webhook` | Stripe | Handle completed Checkout sessions. |
+| `POST` | `/api/stripe` | Stripe | Handle `payment_intent.succeeded` events. |
 
-### Utilisateurs et administration
+### Users and Administration
 
-| Méthode | Chemin | Accès | Description |
+| Method | Path | Access | Description |
 | --- | --- | --- | --- |
-| `GET` | `/api/user/bookings` | Connecté | Réservations de l’utilisateur courant. |
-| `GET` | `/api/user/favorites` | Connecté | Films favoris depuis Clerk. |
-| `POST` | `/api/user/update-favorite` | Connecté | Ajoute ou retire un favori. |
-| `GET` | `/api/admin/is-admin` | Public/session optionnelle | Indique si l’utilisateur courant a le rôle admin. |
-| `GET` | `/api/admin/dashboard` | Admin | Indicateurs et séances actives. |
-| `GET` | `/api/admin/all-shows` | Admin | Toutes les séances futures. |
-| `GET` | `/api/admin/all-bookings` | Admin | Toutes les réservations. |
+| `GET` | `/api/user/bookings` | Authenticated | List the current user's bookings. |
+| `GET` | `/api/user/favorites` | Authenticated | List movies saved in the user's Clerk metadata. |
+| `POST` | `/api/user/update-favorite` | Authenticated | Toggle a movie ID in the user's favourites. |
+| `GET` | `/api/admin/is-admin` | Public/session-aware | Report whether the current user is an administrator. |
+| `GET` | `/api/admin/dashboard` | Admin | Return booking totals, revenue, active shows, and user count. |
+| `GET` | `/api/admin/all-shows` | Admin | List future shows. |
+| `GET` | `/api/admin/all-bookings` | Admin | List all bookings with populated user, show, and movie data. |
 
-Les requêtes connectées doivent inclure un jeton Clerk :
+## Data Model
 
-```http
-Authorization: Bearer <clerk-session-token>
-```
+- `User` stores the Clerk user ID, name, email, and image for dashboard statistics and booking references.
+- `Movie` stores TMDB metadata needed by the client.
+- `Show` stores a movie reference, start time, ticket price, and seat-to-user occupancy map.
+- `Booking` stores the user, show, selected seats, amount, payment state, and optional Stripe payment link.
 
-Un compte administrateur doit avoir `privateMetadata.role` défini à `admin` dans Clerk.
+## Inngest Functions
 
-## Données et traitements asynchrones
+The Inngest module registers four functions:
 
-Les modèles MongoDB sont dans [models/](./models/) :
+- Create a MongoDB user after `clerk/user.created`.
+- Update a MongoDB user after `clerk/user.updated`.
+- Delete a MongoDB user after `clerk/user.deleted`.
+- Wait ten minutes after `app/checkpayment`; if the booking remains unpaid, release its seats and delete the booking.
 
-- `Movie` contient les métadonnées TMDB nécessaires à l’affichage.
-- `Show` lie un film, une date, un prix et la table des sièges occupés.
-- `Booking` lie un utilisateur, une séance, les sièges, le montant et l’état de paiement.
-- `User` est synchronisé depuis Clerk et sert aux statistiques administratives.
+## Stripe Webhooks in Development
 
-Les fonctions dans [inngest/index.js](./inngest/index.js) créent, mettent à jour et suppriment les utilisateurs à partir des événements Clerk. Après une création de réservation, elles attendent dix minutes, puis libèrent les sièges et suppriment la réservation si elle n’est toujours pas payée.
-
-## Webhooks Stripe en local
-
-Pour tester les paiements, faites suivre les événements Stripe vers l’API locale avec l’outil Stripe CLI, puis copiez le secret de signature reçu dans `STRIPE_WEBHOOK_SECRET`. L’endpoint principal est :
+Forward Stripe events to the local API with the Stripe CLI and copy the generated signing secret into `STRIPE_WEBHOOK_SECRET`. The Checkout-session endpoint is:
 
 ```text
 http://localhost:3000/api/booking/webhook
 ```
 
-Ne placez aucun middleware JSON avant les routes de webhook : elles utilisent volontairement `express.raw()` pour valider la signature Stripe.
+The webhook routes intentionally receive the raw request body before `express.json()` so Stripe can validate the signature.
 
-## Déploiement
+## Deployment
 
-[vercel.json](./vercel.json) route les requêtes vers [server.js](./server.js). Ajoutez toutes les variables ci-dessus au projet Vercel, définissez les URLs publiques de webhook dans Stripe et exposez `/api/inngest` à Inngest.
+The included `vercel.json` routes requests to `server.js`. Configure all required environment variables in the deployed server project, register the public Stripe webhook URL, and expose `/api/inngest` to Inngest.

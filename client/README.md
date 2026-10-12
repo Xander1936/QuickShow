@@ -1,92 +1,99 @@
-# QuickShow — Client
+# QuickShow Client
 
-Application frontend de QuickShow. Elle est construite avec React 19 et Vite, utilise React Router pour la navigation, Clerk pour l’authentification et l’API QuickShow pour les films, séances, réservations et données administratives.
+The QuickShow client is a React single-page application for discovering scheduled movies, selecting cinema seats, paying through Stripe Checkout, managing bookings and favourites, and using the administration area.
 
-## Technologies
+## Stack
 
-- React 19, Vite 8 et React Router 7.
-- Tailwind CSS 4 et Lucide React pour l’interface.
-- Clerk pour les sessions et les jetons d’autorisation.
-- Axios pour les appels à l’API.
-- React Hot Toast pour les messages et React Player pour les bandes-annonces.
+- React 19 and Vite 8
+- React Router 7
+- Tailwind CSS 4
+- Clerk for authentication
+- Axios for API requests
+- React Hot Toast, React Player, and Lucide React
 
-## Installation et démarrage
+## Requirements
 
-Depuis ce dossier :
+- Node.js 20 or later
+- A running QuickShow API; see the [server README](../server/README.md)
+- A Clerk publishable key
+
+## Installation
+
+From this directory, install dependencies and start the development server:
 
 ```bash
 npm install
 npm run dev
 ```
 
-Vite affiche l’adresse locale dans le terminal. Lancez également l’API décrite dans le [README serveur](../server/README.md).
+Vite prints the local URL in the terminal.
 
-## Variables d’environnement
+## Environment Variables
 
-Créez [`.env`](./.env) dans ce dossier. Ce fichier ne doit pas être versionné.
+Create a `.env` file in this directory:
 
 ```env
 VITE_CLERK_PUBLISHABLE_KEY=pk_test_...
 VITE_BASE_URL=http://localhost:3000
 VITE_CURRENCY=$
 VITE_TMDB_IMAGE_BASE_URL=https://image.tmdb.org/t/p/original
-VITE_TMDB_API_KEY=tmdb_bearer_token
+VITE_TMDB_API_KEY=tmdb_read_access_token
 ```
 
-`VITE_TMDB_API_KEY` est actuellement utilisé par la page de détail pour obtenir des recommandations. Les variables préfixées par `VITE_` sont intégrées au bundle frontend : n’y placez jamais un secret sensible. Préférez une clé TMDB limitée si vous gardez ce comportement.
+`VITE_TMDB_API_KEY` is used by the movie-details page to retrieve recommendations. Every variable beginning with `VITE_` is included in the browser bundle, so it must not contain a private secret. Use a suitably restricted TMDB token or move this request to the server for a production-hardening pass.
 
 ## Scripts
 
 ```bash
-npm run dev       # serveur de développement avec rechargement à chaud
-npm run build     # build de production dans dist/
-npm run preview   # prévisualisation du build
-npm run lint      # vérification ESLint
+npm run dev       # Start the Vite development server
+npm run build     # Build the production application into dist/
+npm run preview   # Preview the production build locally
+npm run lint      # Run ESLint
 ```
 
 ## Routes
 
-| Route | Page | Accès |
+| Route | Description | Access |
 | --- | --- | --- |
-| `/` | Accueil, contenu mis en avant et bandes-annonces | Public |
-| `/movies` | Films ayant des séances à venir | Public |
-| `/movies/:id` | Détails d’un film, favoris et choix de date | Public |
-| `/movies/:id/:date` | Horaires et sélection des sièges | Public, connexion requise pour réserver |
-| `/my-bookings` | Réservations de l’utilisateur et reprise de paiement | Connecté |
-| `/favorite` | Films favoris | Connecté |
-| `/loading/:nextUrl` | Écran de transition | Public |
-| `/admin` | Tableau de bord | Administrateur |
-| `/admin/add-shows` | Ajout de séances | Administrateur |
-| `/admin/list-shows` | Liste des séances | Administrateur |
-| `/admin/list-bookings` | Liste des réservations | Administrateur |
+| `/` | Landing page with featured content and trailers | Public |
+| `/movies` | Movies with upcoming shows | Public |
+| `/movies/:id` | Movie details, favourite action, and available dates | Public |
+| `/movies/:id/:date` | Showtime and seat selection | Public; sign-in is required to book |
+| `/my-bookings` | Current user's bookings and payment retry | Authenticated |
+| `/favorite` | Current user's favourite movies | Authenticated |
+| `/loading/:nextUrl` | Transitional loading page | Public |
+| `/admin` | Dashboard overview | Administrator |
+| `/admin/add-shows` | Create showtimes for a TMDB movie | Administrator |
+| `/admin/list-shows` | View upcoming shows | Administrator |
+| `/admin/list-bookings` | View all bookings | Administrator |
 
-Une personne dont le rôle Clerk n’est pas `admin` est redirigée depuis l’espace d’administration.
+The client checks `privateMetadata.role` through the API. Users without the `admin` role are redirected away from the administration area.
 
-## Organisation du code
+## Booking Flow
+
+1. The movie-details page loads the movie's future showtimes grouped by date.
+2. The seat page loads occupied seats after a showtime is selected and limits a selection to five seats.
+3. An authenticated user creates a booking through the API.
+4. The booking page opens or retries the Stripe Checkout session and verifies a successful return from Stripe.
+
+Seat availability and final reservation handling are enforced by the API; the client only represents the current state.
+
+## Project Structure
 
 ```text
 src/
-├── assets/       Images, logos et données de démonstration
-├── components/   Composants réutilisables et composants d’administration
-├── context/      État applicatif partagé et client Axios
-├── lib/          Formatage des dates, heures et nombres
-├── pages/        Pages publiques, réservation et administration
-├── App.jsx       Arbre des routes et shell global
-├── index.css     Styles globaux et thème Tailwind
-└── main.jsx      Point d’entrée React et fournisseur Clerk
+├── assets/       Static images, icons, and application assets
+├── components/   Shared public and admin UI components
+├── context/      Shared application state and Axios configuration
+├── lib/          Date, time, and number formatting helpers
+├── pages/        Public, booking, favourite, and admin pages
+├── App.jsx       Routes and top-level application shell
+├── index.css     Global styles and Tailwind theme
+└── main.jsx      React, Router, Clerk, and context providers
 ```
 
-Le contexte [AppContext.jsx](./src/context/AppContext.jsx) initialise l’URL Axios via `VITE_BASE_URL`, charge les films programmés et rend disponibles l’utilisateur, son jeton Clerk, son rôle, les favoris et les images TMDB.
+`AppContext` configures Axios with `VITE_BASE_URL`, fetches scheduled movies, and exposes authentication-related state, favourites, navigation helpers, and the TMDB image base URL.
 
-## Flux de réservation
+## Deployment
 
-1. La page de détail charge les dates et créneaux du film.
-2. La page de sièges charge les sièges occupés dès qu’un créneau est choisi ; elle limite la sélection à cinq sièges.
-3. L’API crée une réservation et retourne une URL Stripe Checkout.
-4. La page « My Bookings » vérifie le paiement au retour de Stripe et affiche les réservations existantes.
-
-Le choix et le verrouillage définitif des sièges sont validés côté API ; l’interface ne remplace pas cette validation.
-
-## Production
-
-[vercel.json](./vercel.json) réécrit les chemins vers `/` afin que React Router fonctionne après un rechargement direct d’une route. Ajoutez les mêmes variables d’environnement dans le projet de déploiement et définissez `VITE_BASE_URL` sur l’URL publique de l’API.
+The included `vercel.json` rewrites all paths to `/`, allowing React Router routes to work after a direct browser refresh. Add the same environment variables to the deployed client project and set `VITE_BASE_URL` to the public server URL.
