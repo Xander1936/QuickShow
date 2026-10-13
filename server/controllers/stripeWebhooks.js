@@ -1,4 +1,6 @@
-import stripe from "stripe";
+// import stripe from "stripe";
+// Import the application's shared, configured Stripe client.
+import stripe from '../config/stripe.js';
 import Booking from '../models/Booking.js'
 
 export const stripeWebhooks = async (request, response) => {
@@ -41,3 +43,29 @@ export const stripeWebhooks = async (request, response) => {
         response.status(500).send("Internal Server Error");
     }
 }
+
+export const handleStripeWebhook = async (req, res) => {
+    // Security requirement: Stripe uses the unparsed raw body to verify its signature.
+    const sig = req.headers['stripe-signature'];
+    let event;
+
+    try {
+        event = stripe.webhooks.constructEvent(
+            req.rawBody, // Stripe requires the unparsed request buffer for verification.
+            sig, 
+            process.env.STRIPE_WEBHOOK_SECRET
+        );
+    } catch (err) {
+        console.error(`[CRITICAL] Webhook Signature Verification Failed: ${err.message}`);
+        return res.status(400).send(`Webhook Error: ${err.message}`);
+    }
+
+    // Route verified events to their asynchronous handlers.
+    if (event.type === 'checkout.session.completed') {
+        const session = event.data.object;
+        console.log(`[SUCCESS] Payment verified for Customer: ${session.customer}`);
+        // Trigger the Inngest workflow that provisions the user's access.
+    }
+
+    res.json({ received: true });
+};
