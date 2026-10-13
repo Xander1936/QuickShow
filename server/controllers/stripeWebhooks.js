@@ -1,4 +1,5 @@
 // import stripe from "stripe";
+
 // Import the application's shared, configured Stripe client.
 import stripe from '../configs/stripe.js';
 import Booking from '../models/Booking.js'
