@@ -1,6 +1,6 @@
 // import stripe from "stripe";
 // Import the application's shared, configured Stripe client.
-import stripe from '../config/stripe.js';
+import stripe from '../configs/stripe.js';
 import Booking from '../models/Booking.js'
 
 export const stripeWebhooks = async (request, response) => {
