@@ -67,18 +67,50 @@ const releaseSeatsAndDeleteBooking = inngest.createFunction(
         await step.sleepUntil('wait-for-10-minutes', tenMinutesLater);
 
         await step.run('check-payment-status', async() => {
-            const bookingId = event.data.bookingId;
-            const booking = await Booking.findById(bookingId)
+            try {
+                const bookingId = event.data && event.data.bookingId;
+                if(!bookingId) {
+                    console.log('[inngest] missing bookingId in event.data');
+                    return;
+                }
 
-            // If payment is not made, release seats and delete booking
-            if(!booking.isPaid){
-                const show = await Show.findById(booking.show);
-                booking.bookedSeats.forEach((seat) => {
-                    delete show.occupiedSeats[seat]
-                });
-                show.markModified('occupiedSeats')
-                await show.save()
-                await Booking.findByIdAndDelete(booking._id) 
+                const booking = await Booking.findById(bookingId);
+
+                if(!booking){
+                    console.log(`[inngest] booking ${bookingId} not found`);
+                    return;
+                }
+
+                if(!booking.isPaid){
+                    const show = await Show.findById(booking.show);
+
+                    if(!show){
+                        await Booking.findByIdAndDelete(booking._id);
+                        console.log(`[inngest] show for booking ${bookingId} not found — booking deleted`);
+                        return;
+                    }
+
+                    let changed = false;
+
+                    if(Array.isArray(booking.bookedSeats)){
+                        booking.bookedSeats.forEach((seat) => {
+                            if(show.occupiedSeats && show.occupiedSeats[seat] === booking.user){
+                                delete show.occupiedSeats[seat];
+                                changed = true;
+                            }
+                        });
+                    }
+
+                    if(changed){
+                        show.markModified('occupiedSeats');
+                        await show.save();
+                    }
+
+                    await Booking.findByIdAndDelete(booking._id);
+                    console.log(`[inngest] released seats and deleted booking ${bookingId}`);
+                }
+            } catch (error) {
+                console.error('[inngest] releaseSeatsAndDeleteBooking failed:', error);
             }
         })
     }
