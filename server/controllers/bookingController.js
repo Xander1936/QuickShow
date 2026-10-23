@@ -1,5 +1,6 @@
 // IMPORTANT: This module is part of the QuickShow application. It contains the core UI or server logic for this feature and should remain behaviorally identical while editing.
 
+import { Inngest } from 'inngest';
 import { inngest } from '../inngest/index.js';
 import Booking from '../models/Booking.js';
 import Show from '../models/Show.js';
@@ -85,7 +86,7 @@ export const createBooking = async (req, res) => {
         await booking.save()
 
         // Run Inngest Scheduler Function to check payment status after 10 minutes
-        await inngest.send({
+        await Inngest.send({
             name: "app/checkpayment",
             data: {
                 bookingId: booking._id.toString()
