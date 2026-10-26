@@ -1,23 +1,25 @@
 import nodemailer from 'nodemailer';
 
 const transporter = nodemailer.createTransport({
-    host: "smtp-relay.brevo.com", // smtp-relay.brevo.com
+    host: 'smtp-relay.brevo.com',
     port: 587,
-    // secure:false, // upgrade later with STARTTLS
     auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
     },
 });
 
-const sendEmail = async () => {
-    const response = await transporter.sendMail({
+const sendEmail = async ({ to, subject, html }) => {
+    if (!process.env.SENDER_EMAIL || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
+        throw new Error('SMTP_USER, SMTP_PASS, and SENDER_EMAIL must be configured to send email.');
+    }
+
+    return transporter.sendMail({
         from: process.env.SENDER_EMAIL,
         to,
         subject,
-        html: body,
-    })
-    return response
-}
+        html,
+    });
+};
 
 export default sendEmail;

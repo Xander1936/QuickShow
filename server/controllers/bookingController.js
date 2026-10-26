@@ -1,7 +1,6 @@
 // IMPORTANT: This module is part of the QuickShow application. It contains the core UI or server logic for this feature and should remain behaviorally identical while editing.
 
-import { Inngest } from 'inngest';
-// import { inngest } from '../inngest/index.js';
+import { inngest } from '../inngest/index.js';
 import Booking from '../models/Booking.js';
 import Show from '../models/Show.js';
 import stripe from 'stripe';
@@ -86,7 +85,7 @@ export const createBooking = async (req, res) => {
         await booking.save()
 
         // Run Inngest Scheduler Function to check payment status after 10 minutes
-        await Inngest.send({
+        await inngest.send({
             name: "app/checkpayment",
             data: {
                 bookingId: booking._id.toString()
@@ -126,7 +125,7 @@ export const handleStripeWebhook = async (req, res) => {
         const signature = req.headers['stripe-signature'];
 
         event = stripeInstance.webhooks.constructEvent(
-            req.body,
+            req.rawBody,
             signature,
             process.env.STRIPE_WEBHOOK_SECRET
         );
@@ -138,11 +137,19 @@ export const handleStripeWebhook = async (req, res) => {
     if (event.type === 'checkout.session.completed') {
         const session = event.data.object;
 
-        if (session.payment_status === 'paid') {
-            await Booking.findByIdAndUpdate(
-                session.metadata.bookingId,
-                { isPaid: true }
-            );
+        const bookingId = session.metadata?.bookingId;
+        if (session.payment_status === 'paid' && bookingId) {
+            const booking = await Booking.findByIdAndUpdate(bookingId, {
+                isPaid: true,
+                paymentLink: ''
+            });
+            if (booking) {
+                await inngest.send({
+                    id: `booking-paid-${bookingId}`,
+                    name: 'app/show.booked',
+                    data: { bookingId }
+                });
+            }
         }
     }
 
@@ -229,6 +236,14 @@ export const verifyPaymentSession = async (req, res) => {
             { isPaid: true, paymentLink: '' },
             { new: true }
         );
+
+        if (booking) {
+            await inngest.send({
+                id: `booking-paid-${booking.id}`,
+                name: 'app/show.booked',
+                data: { bookingId: booking.id }
+            });
+        }
 
         res.json({ success: true, isPaid: Boolean(booking) });
     } catch (error) {

@@ -47,11 +47,15 @@ STRIPE_SECRET_KEY=sk_test_...
 STRIPE_WEBHOOK_SECRET=whsec_...
 INNGEST_EVENT_KEY=...
 INNGEST_SIGNING_KEY=...
+SMTP_USER=your_brevo_smtp_username
+SMTP_PASS=your_brevo_smtp_password
+SENDER_EMAIL=bookings@example.com
 ```
 
 The database connection appends `/quickshow` to `MONGODB_URI`; provide the server or cluster URI without a final database name when using the default database name.
 
 `INNGEST_EVENT_KEY` and `INNGEST_SIGNING_KEY` are required when your Inngest deployment mode requires them.
+The SMTP settings are required for booking confirmations, show reminders, and new-show notifications.
 
 ## Authentication and Roles
 
@@ -108,7 +112,6 @@ Example request body for `POST /api/show/add`:
 | `POST` | `/api/booking/payment-session` | Authenticated | Create a new Checkout session for the user's unpaid booking. |
 | `POST` | `/api/booking/verify-payment` | Authenticated | Verify a returned Checkout session and update the booking. |
 | `POST` | `/api/booking/webhook` | Stripe | Handle completed Checkout sessions. |
-| `POST` | `/api/stripe` | Stripe | Handle `payment_intent.succeeded` events. |
 
 ### Users and Administration
 
@@ -131,12 +134,16 @@ Example request body for `POST /api/show/add`:
 
 ## Inngest Functions
 
-The Inngest module registers four functions:
+The Inngest endpoint registers these functions:
 
-- Create a MongoDB user after `clerk/user.created`.
-- Update a MongoDB user after `clerk/user.updated`.
+- Create or update a MongoDB user after `clerk/user.created` or `clerk/user.updated`.
 - Delete a MongoDB user after `clerk/user.deleted`.
-- Wait ten minutes after `app/checkpayment`; if the booking remains unpaid, release its seats and delete the booking.
+- Wait ten minutes after `app/checkpayment`; if the booking remains unpaid, release its reserved seats and delete it.
+- Send a booking confirmation after `app/show.booked`.
+- Send a reminder one day before a paid booking's showtime.
+- Notify registered users when `app/show.added` announces new showtimes.
+
+Successful Stripe webhooks and the client payment-verification route dispatch the booking event. Inngest event IDs prevent those two payment paths from scheduling duplicate confirmation and reminder workflows.
 
 ## Stripe Webhooks in Development
 

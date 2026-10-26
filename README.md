@@ -16,7 +16,7 @@ QuickShow is a full-stack movie discovery and cinema ticket-booking application.
 - Create Stripe Checkout payment sessions and view or retry unpaid bookings.
 - Save favourite movies in Clerk user metadata.
 - Provide an admin dashboard for adding shows and reviewing show and booking data.
-- Synchronise Clerk users into MongoDB and remove unpaid bookings after ten minutes through Inngest.
+- Synchronise Clerk users into MongoDB, send booking confirmations and show reminders, notify users about new shows, and remove unpaid bookings after ten minutes through Inngest.
 
 ## Architecture
 
