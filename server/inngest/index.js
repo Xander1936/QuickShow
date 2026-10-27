@@ -67,6 +67,9 @@ const syncUserUpdation = inngest.createFunction(
     }
 );
 
+// Inngest Function to cancel booking and 
+// release seats of show after 10 minutes of booking created 
+// if payment is not made
 const releaseSeatsAndDeleteBooking = inngest.createFunction(
     {
         id: 'release-seats-delete-booking',
@@ -80,6 +83,7 @@ const releaseSeatsAndDeleteBooking = inngest.createFunction(
             const bookingId = event.data.bookingId;
             const booking = await Booking.findById(bookingId);
 
+            // If payment is not made, release seats and delete booking
             if (booking && !booking.isPaid) {
                 const show = await Show.findById(booking.show);
                 if (show) {
@@ -90,8 +94,9 @@ const releaseSeatsAndDeleteBooking = inngest.createFunction(
                     });
                     show.markModified('occupiedSeats');
                     await show.save();
+                    await Booking.findByIdAndDelete(booking._id);
                 }
-                await Booking.findByIdAndDelete(booking._id);
+                // await Booking.findByIdAndDelete(booking._id);
             }
         });
     }

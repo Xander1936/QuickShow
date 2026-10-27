@@ -35,7 +35,7 @@ const ListBookings = () => {
     }
   },[user]);
 
-  return !isLoading ? (
+  return !isLoading ? ( 
     <>
       <Title text1="List" text2="Bookings" />
       <div className="max-w-4xl mt-6 overflow-x-auto">
